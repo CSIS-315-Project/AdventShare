@@ -19,7 +19,8 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "AdventShare",
-  description: "A platform for sharing and discovering items in your community.",
+  description:
+    "A platform for sharing and discovering items in your community.",
 };
 
 export default function RootLayout({
@@ -34,7 +35,6 @@ export default function RootLayout({
       >
         <ClerkProvider>
           {children}
-          <Footer />
           <Toaster richColors />
         </ClerkProvider>
       </body>
