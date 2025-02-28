@@ -5,8 +5,6 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
 import { ClerkProvider } from "@clerk/nextjs";
-import Navbar from "@/components/shared/Navbar";
-import Footer from "@/components/shared/Footer";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,7 +33,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ClerkProvider>
-          <Navbar />
           {children}
           <Footer />
           <Toaster richColors />
