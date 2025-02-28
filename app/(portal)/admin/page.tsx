@@ -1,7 +1,6 @@
 export default function AdministrationPage() {
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">Administration</h1>
       <p className="text-gray-500">
         This is the administration page. Only administrators can access this
         page.
