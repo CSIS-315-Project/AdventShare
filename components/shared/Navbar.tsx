@@ -2,7 +2,7 @@ import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
-import Searchbar from "@/components/Searchbar";
+import Searchbar from "@/components/shared/Searchbar";
 
 export default function Navbar() {
   return (
