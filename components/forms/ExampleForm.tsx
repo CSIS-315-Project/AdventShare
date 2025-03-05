@@ -26,6 +26,17 @@ import { Calendar } from "@/components/ui/calendar";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
+// This would normally be imported from server action folder for your specific feature.
+const action = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    if (Math.random() > 0.5) {
+      resolve("Success")
+    } else {
+      reject("Failed")
+    }
+  }, 2000)
+});
+
 const formSchema = z.object({
   username: z.string().min(3),
   dob: z.coerce.date(),
@@ -50,12 +61,10 @@ function CustomForm() {
       //   </pre>,
       // );
 
-      toast.promise(async () => {
-        await fetch('http://localhost:3001', {
-          method: "POST",
-          body: `Some Message`
-        });
-      }, {
+      // Bind the action with ID, if needed.
+      // const exampleAction = action.bind(null, id)
+
+      toast.promise(action, {
         success: "Success",
         error: (err) => {
           return `Error: ${err}`

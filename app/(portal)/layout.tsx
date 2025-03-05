@@ -1,6 +1,6 @@
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AdminSidebar } from "@/components/admin/Sidebar";
+import { AdminSidebar } from "@/features/admin/overview/components/Sidebar";
 import { Separator } from "@/components/ui/separator";
 
 export const metadata = {
