@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
+
 @custom-variant dark (&:is(.dark *));
+
 
 @layer base {
   :root {
@@ -184,4 +186,8 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+h1 {
+  color: #003B5C;
 }
