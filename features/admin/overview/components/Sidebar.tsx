@@ -11,10 +11,10 @@ import {
 import { currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
 
-import { SidebarMain } from "@/components/admin/SidebarMain";
-import { SidebarSecondary } from "@/components/admin/SidebarSecondary";
-import { SidebarTertiary } from "@/components/admin/SidebarTertiary";
-import { SidebarUser } from "@/components/admin/SidebarUser";
+import { SidebarMain } from "@/features/admin/overview/components/SidebarMain";
+import { SidebarSecondary } from "@/features/admin/overview/components/SidebarSecondary";
+import { SidebarTertiary } from "@/features/admin/overview/components/SidebarTertiary";
+import { SidebarUser } from "@/features/admin/overview/components/SidebarUser";
 
 export async function AdminSidebar() {
   const user = await currentUser();

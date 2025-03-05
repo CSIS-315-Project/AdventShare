@@ -1,4 +1,4 @@
-import { FaSearch } from "react-icons/fa";
+import { Search } from "lucide-react";
 
 export default function Searchbar() {
   return (
@@ -17,7 +17,7 @@ export default function Searchbar() {
         className="border-y-2 border-gray-300 p-2 w-80 focus:outline-none"
       />
       <button className="bg-blue-600 text-white rounded-r-sm p-2 px-4 focus:outline-none">
-        <FaSearch />
+        <Search />
       </button>
     </div>
   );
