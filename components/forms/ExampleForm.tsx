@@ -43,7 +43,7 @@ const formSchema = z.object({
   mobile: z.boolean().default(true),
 });
 
-function CustomForm() {
+export default function CustomForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -173,5 +173,3 @@ function CustomForm() {
     </Form>
   );
 }
-
-export { CustomForm };

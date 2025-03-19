@@ -1,4 +1,4 @@
-export default function AdministrationPage() {
+export default async function AdministrationPage() {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-gray-500">

@@ -16,17 +16,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+import { completeOnboarding } from '@/features/auth/server/actions/onboarding'
+
 const formSchema = z.object({
   school: z.string().min(3)
 });
 
 type FormTypes = z.infer<typeof formSchema>;
 
-export default function OnboardingForm({
-    action,
-  }: {
-    action: (formData: FormTypes) => Promise<{ message: string; error?: undefined; } | { message: UserPublicMetadata; error?: undefined; } | { error: string; message?: undefined; }>
-  }) {
+export default function OnboardingForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,7 +34,7 @@ export default function OnboardingForm({
 
   function onSubmit(data: FormTypes) {
     try {
-      toast.promise(action(data), {
+      toast.promise(completeOnboarding(data), {
         success: "Success",
         error: (err) => {
           return `Error: ${err}`
