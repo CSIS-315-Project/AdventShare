@@ -1,14 +1,9 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Footer from "@/components/Footer";
 export default function Page() {
-  const openSignIn = () => {
-    // Logic to open sign-in modal
-    console.log("Sign-in modal opened");
-  };
-
   return (
-    <main className="grid h-screen">
-      <div className="p-4">
+    <main>
+      <div className=" grid h-screen p-4">
         <SignedOut>
           <div className="space-y-6">
             <div
