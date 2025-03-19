@@ -1,10 +1,5 @@
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 export default function Page() {
-  const openSignIn = () => {
-    // Logic to open sign-in modal
-    console.log("Sign-in modal opened");
-  };
-
   return (
     <div className="grid p-4 h-screen">
       <SignedOut>
