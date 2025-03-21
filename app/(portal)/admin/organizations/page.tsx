@@ -1,20 +1,69 @@
-export default function AdministrationPage() {
+import { OrganizationsTable } from "@/features/admin/organizations/components/table/content";
+
+import { Separator } from "@/components/ui/separator";
+import { CreateOrganization } from "@/features/admin/organizations/components/forms/create";
+import Search from "@/features/admin/organizations/components/search";
+
+import { Suspense } from 'react';
+import Pagination from "@/components/pagination";
+import { getOrganizations } from "@/features/admin/organizations/server/db/organizations";
+import Skeleton from "@/features/admin/organizations/components/table/skeleton";
+
+export default async function AdministrationPage(props: {
+  searchParams?: Promise<{
+    query?: string;
+    page?: string;
+  }>;
+}) {
+  const searchParams = await props.searchParams;
+  const query = searchParams?.query || '';
+  const currentPage = Number(searchParams?.page) || 1;
+
+  const LIMIT = 10;
+
+  const organizations = await getOrganizations({
+    query,
+    limit: LIMIT,
+    offset: (currentPage - 1) * 10,
+  })
+
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">Administration</h1>
-      <p className="text-gray-500">
-        This is the administration page. Only administrators can access this
-        page.
-      </p>
-      <p className="text-gray-500">
-        You can manage users, roles, and permissions from here.
-      </p>
-      <p className="text-gray-500">
-        Make sure to handle sensitive information with care.
-      </p>
-      <p className="text-gray-500">
-        If you have any questions, please contact support.
-      </p>
+    <div className="container mx-auto py-8">
+      <div className="flex flex-col space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Organizations</h1>
+        <p className="text-muted-foreground">
+          Manage school organizations in the system.
+        </p>
+      </div>
+
+      <Separator className="my-6" />
+
+      <div className="w-full">
+        <div className="flex w-full items-center justify-between">
+          <h1 className={`text-2xl`}>Invoices</h1>
+        </div>
+        <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+          <Search placeholder="Search invoices..." />
+          <CreateOrganization />
+        </div>
+        <Suspense
+          key={query + currentPage}
+          fallback={<Skeleton />}
+        >
+          <OrganizationsTable organizations={organizations.data.map((obj) => {
+            return {
+              id: obj.id,
+              name: obj.name,
+              createdAt: obj.createdAt,
+              phone: "123-456-7890",
+              address: "1234 Main St",
+            }
+          })} />
+        </Suspense>
+        <div className="mt-5 flex w-full justify-center">
+          <Pagination page={currentPage} offset={currentPage * LIMIT} limit={LIMIT} total={organizations.totalCount} />
+        </div>
+      </div>
     </div>
   );
 }

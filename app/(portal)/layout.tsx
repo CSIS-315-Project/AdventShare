@@ -1,7 +1,4 @@
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AdminSidebar } from "@/features/admin/overview/components/Sidebar";
-import { Separator } from "@/components/ui/separator";
 
 export const metadata = {
   title: "Next.js",
@@ -15,14 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <SidebarProvider className="w-full">
-      <AdminSidebar />
-      <div className="w-full px-3">
-        <div className="py-4 flex flex-row justify-between">
-            <SidebarTrigger />
-        </div>
-        <Separator />
-        <div className="py-4">{children}</div>
-      </div>
+      {children}
     </SidebarProvider>
   );
 }
