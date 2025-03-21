@@ -56,6 +56,7 @@ export function CreateOrganization() {
     setIsSubmitting(true);
 
     toast.promise(action(values), {
+      loading: "Creating organization...",
       success: "Organization created successfully!",
       error: (err) => {
         return `Error: ${err}`;
@@ -72,6 +73,9 @@ export function CreateOrganization() {
         <Button>Create Organization</Button>
       </DialogTrigger>
       <DialogContent className="pt-6">
+        <DialogTitle>
+          Create a New Organization
+        </DialogTitle>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
