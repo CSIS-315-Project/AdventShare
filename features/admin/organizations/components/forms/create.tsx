@@ -1,63 +1,44 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Loader2 } from "lucide-react"
-import { toast } from "sonner"
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-  } from "@/components/ui/dialog"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { create } from "@/features/admin/organizations/server/actions/organizations";
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Organization name must be at least 2 characters.",
-  }),
-  address: z.string().min(5, {
-    message: "Address must be at least 5 characters.",
-  }),
-  city: z.string().min(2, {
-    message: "City is required.",
-  }),
-  state: z.string().min(2, {
-    message: "State is required.",
-  }),
-  zipCode: z.string().min(5, {
-    message: "Zip code must be at least 5 characters.",
-  }),
-  phone: z.string().min(10, {
-    message: "Phone number must be at least 10 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  website: z
-    .string()
-    .url({
-      message: "Please enter a valid URL.",
-    })
-    .optional()
-    .or(z.literal("")),
-  description: z.string().optional(),
-})
+import { organizationSchema } from "@/features/admin/organizations/schemas/organization";
 
 export function CreateOrganization() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const action = create
+
+  const form = useForm<z.infer<typeof organizationSchema>>({
+    resolver: zodResolver(organizationSchema),
     defaultValues: {
       name: "",
       address: "",
@@ -69,44 +50,27 @@ export function CreateOrganization() {
       website: "",
       description: "",
     },
-  })
+  });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
+  function onSubmit(values: z.infer<typeof organizationSchema>) {
+    setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log(values)
-      setIsSubmitting(false)
-      
-      const action = new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (Math.random() > 0.5) {
-            resolve("Success")
-          } else {
-            reject("Failed")
-          }
-        }, 2000)
-      });
+    toast.promise(action(values), {
+      success: "Organization created successfully!",
+      error: (err) => {
+        return `Error: ${err}`;
+      },
+    });
 
-      toast.promise(action, {
-        success: "Organization created successfully!",
-        error: (err) => {
-          return `Error: ${err}`
-        },
-      })
-
-      form.reset()
-    }, 1500)
+    form.reset();
+    setIsSubmitting(false);
   }
 
   return (
     <Dialog>
-        <DialogTrigger asChild>
-            <Button>
-                Create Organization
-            </Button>
-        </DialogTrigger>
+      <DialogTrigger asChild>
+        <Button>Create Organization</Button>
+      </DialogTrigger>
       <DialogContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -234,9 +198,15 @@ export function CreateOrganization() {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Enter details about the school..." className="min-h-[120px]" {...field} />
+                    <Textarea
+                      placeholder="Enter details about the school..."
+                      className="min-h-[120px]"
+                      {...field}
+                    />
                   </FormControl>
-                  <FormDescription>Optional. Provide additional information about the school.</FormDescription>
+                  <FormDescription>
+                    Optional. Provide additional information about the school.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -244,7 +214,9 @@ export function CreateOrganization() {
 
             <div className="flex justify-end">
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Create School
               </Button>
             </div>
@@ -252,6 +224,5 @@ export function CreateOrganization() {
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

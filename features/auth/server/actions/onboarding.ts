@@ -1,34 +1,26 @@
 "use server";
 
-import { auth, clerkClient } from "@clerk/nextjs/server";
-import { z } from "zod";
+import { authClient } from "@/lib/safe-actions";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const formSchema = z.object({
-  school: z.string().min(3),
-});
+import { clerkClient } from "@clerk/nextjs/server";
 
-type FormTypes = z.infer<typeof formSchema>;
+import { formSchema } from "@/features/auth/schemas/onboarding";
 
-export const completeOnboarding = async (formData: FormTypes) => {
-  const { userId } = await auth();
+export const completeOnboarding = authClient
+  .schema(formSchema)
+  .action(async ({ parsedInput: { school }, ctx: { userId }}) => {
+    try {
+      const client = await clerkClient();
 
-  if (!userId) {
-    return { message: "No Logged In User" };
-  }
-
-  const client = await clerkClient();
-
-  try {
-    const res = await client.users.updateUser(userId, {
-      publicMetadata: {
-        onboardingComplete: true,
-        school: formData.school,
-      },
-    });
-    return { message: res.publicMetadata };
-  } catch (err) {
-    console.log(err);
-    return { error: "There was an error updating the user metadata." };
-  }
-};
+      const res = await client.users.updateUser(userId, {
+        publicMetadata: {
+          onboardingComplete: true,
+          school: school,
+        },
+      });
+      return { message: res.publicMetadata };
+    } catch (err) {
+      console.log(err);
+      return { error: "There was an error updating the user metadata." };
+    }
+  });
