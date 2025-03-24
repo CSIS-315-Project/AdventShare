@@ -14,6 +14,8 @@ export default function ItemCard({
   const defaultImageUrl = "/Logo2.png";
   const imageUrl = defaultImageUrl;
 
+  const formatedPostedTime = new Date(postedTime).toLocaleDateString();
+
   return (
     <div className="border p-4 rounded">
       {imageUrl ? (
@@ -28,8 +30,8 @@ export default function ItemCard({
         </div>
       )}
       <h3 className="font-medium">{title}</h3>
-      <p className="text-gray-600">{createdBy}</p>
-      <p className="text-gray-600">{postedTime}</p>
+      <p className="text-gray-600 text-sm">{createdBy}</p>
+      <p className="text-gray-600">{formatedPostedTime}</p>
     </div>
   );
 }

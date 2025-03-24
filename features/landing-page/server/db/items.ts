@@ -3,7 +3,6 @@ import "server-only";
 import supabase from "@/lib/supabase";
 // import clerkClient from "@/lib/auth";
 
-
 // Fetch Latest Items
 export async function getNewestItems() {
   const { data, error } = await supabase
@@ -17,7 +16,6 @@ export async function getNewestItems() {
     return [];
   }
 
-
   return data || [];
 }
 
@@ -25,7 +23,7 @@ export async function getMyItems(userId: string) {
   const { data, error } = await supabase
     .from("items")
     .select("*")
-    .eq("posted_by", userId)
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (error) {
