@@ -23,6 +23,14 @@ const items = [{
   title: "Dashboard",
   url: "/admin",
   icon: Home,
+}, {
+  title: "Users",
+  url: "/admin/users",
+  icon: Home,
+}, {
+  title: "Organizations",
+  url: "/admin/organizations",
+  icon: Home,
 }] as {
   title: string
   url: string
