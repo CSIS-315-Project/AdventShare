@@ -21,34 +21,41 @@ export const create = adminClient
         school,
       },
     }) => {
-      try {
-        const client = await clerkClient();
+      const client = await clerkClient();
 
-        const newUser = await client.users.createUser({
-          emailAddress: [email],
-          firstName,
-          lastName,
-          password,
-          createdAt: new Date(),
+      if (password !== confirmPassword) {
+        throw new Error("Passwords do not match.");
+      }
+
+      console.log({ email, firstName, lastName, password, confirmPassword, role, school });
+
+      const newUser = await client.users.createUser({
+        emailAddress: [email],
+        firstName,
+        lastName,
+        password,
+        createdAt: new Date(),
+        publicMetadata: {
+          role
+        }
+      });
+
+      if (school) {
+        await client.users.updateUser(newUser.id, {
           publicMetadata: {
-            school,
-            onboardingComplete: true,
+            school: school.id,
+            onboardingComplete: false
           },
         });
 
-        if (school) {
-          await client.organizations.createOrganizationMembership({
-            organizationId: school.id,
-            userId: newUser.id,
-            role: role,
-          });
-        }
-
-        return { message: "User created successfully!" };
-      } catch (err) {
-        console.log(err);
-        return { error: "There was an error creating the user." };
+        await client.organizations.createOrganizationMembership({
+          organizationId: school.id,
+          userId: newUser.id,
+          role: role,
+        });
       }
+
+      return { message: "User created successfully!" };
     }
   );
 
@@ -60,35 +67,25 @@ export const edit = adminClient
       parsedInput: { username, firstName, lastName, password },
       bindArgsParsedInputs: [userId],
     }) => {
-      try {
-        const client = await clerkClient();
+      const client = await clerkClient();
 
-        await client.users.updateUser(userId, {
-          username,
-          firstName,
-          lastName,
-          password,
-        });
+      await client.users.updateUser(userId, {
+        username,
+        firstName,
+        lastName,
+        password,
+      });
 
-        return { message: "Organization created successfully!" };
-      } catch (err) {
-        console.log(err);
-        return { error: "There was an error updating the user metadata." };
-      }
+      return { message: "Organization created successfully!" };
     }
   );
 
 export const deleteUser = adminClient
   .bindArgsSchemas<[userId: z.ZodString]>([z.string()])
   .action(async ({ bindArgsParsedInputs: [userId] }) => {
-    try {
-      const client = await clerkClient();
+    const client = await clerkClient();
 
-      await client.users.deleteUser(userId);
+    await client.users.deleteUser(userId);
 
-      return { message: "User deleted successfully!" };
-    } catch (err) {
-      console.log(err);
-      return { error: "There was an error updating the user metadata." };
-    }
+    return { message: "User deleted successfully!" };
   });

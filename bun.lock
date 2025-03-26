@@ -4,7 +4,7 @@
     "": {
       "name": "adventshare",
       "dependencies": {
-        "@clerk/nextjs": "^6.12.9",
+        "@clerk/nextjs": "^6.12.10",
         "@hookform/resolvers": "^4.1.3",
         "@radix-ui/react-alert-dialog": "^1.1.6",
         "@radix-ui/react-avatar": "^1.1.3",
@@ -17,7 +17,7 @@
         "@radix-ui/react-separator": "^1.1.2",
         "@radix-ui/react-slot": "^1.1.2",
         "@radix-ui/react-tooltip": "^1.1.8",
-        "@tailwindcss/postcss": "^4.0.15",
+        "@tailwindcss/postcss": "^4.0.17",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
@@ -34,7 +34,7 @@
         "react-icons": "^5.5.0",
         "sonner": "^2.0.1",
         "tailwind-merge": "^3.0.2",
-        "tailwindcss": "^4.0.15",
+        "tailwindcss": "^4.0.17",
         "tailwindcss-animate": "^1.0.7",
         "zod": "^3.24.2",
       },
@@ -48,6 +48,9 @@
         "typescript": "^5.8.2",
       },
     },
+  },
+  "overrides": {
+    "@radix-ui/react-dismissable-layer": "1.1.5",
   },
   "packages": {
     "@alloc/quick-lru": ["@alloc/quick-lru@5.2.0", "", {}, "sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw=="],

@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/popover";
 
 import {
+  CommandDialog,
   Command,
   CommandEmpty,
   CommandGroup,
@@ -79,10 +80,10 @@ export function CreateUser({
     setIsSubmitting(true);
 
     toast.promise(create(values), {
-      loading: "Creating organization...",
-      success: "Organization created successfully!",
+      loading: "Creating user...",
+      success: "User created successfully!",
       error: (err) => {
-        return `Error: ${err}`;
+        return err.message;
       },
     });
 
@@ -206,7 +207,7 @@ export function CreateUser({
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="p-0">
+                        <PopoverContent className="z-50 p-0">
                           <Command className="flex flex-col gap-2">
                             <CommandInput
                               placeholder="Search schools..."
