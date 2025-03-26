@@ -1,23 +1,26 @@
 import { UsersTable } from "@/features/admin/users/components/table/content";
 
 import { Separator } from "@/components/ui/separator";
-import { CreateOrganization } from "@/features/admin/users/components/forms/create";
+import { CreateUser } from "@/features/admin/users/components/forms/create";
 import Search from "@/features/admin/users/components/search";
 
 import { Suspense } from 'react';
 import Pagination from "@/components/pagination";
 import { getUsers } from "@/features/admin/users/server/db/users";
 import Skeleton from "@/features/admin/users/components/table/skeleton";
+import { getOrganizations } from "@/features/admin/organizations/server/db/organizations";
 
 export default async function UsersPage(props: {
   searchParams?: Promise<{
+    organization?: string;
     query?: string;
     page?: string;
   }>;
 }) {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || '';
-  const currentPage = Number(searchParams?.page) || 1;
+  const organization = searchParams?.organization || '';
+  const currentPage = Math.max(1, Number(searchParams?.page) || 1);
 
   const LIMIT = 10;
 
@@ -26,6 +29,12 @@ export default async function UsersPage(props: {
     limit: LIMIT,
     offset: (currentPage - 1) * LIMIT,
   })
+
+  const organizations = await getOrganizations({
+    query: organization,
+    limit: LIMIT,
+    offset: 0,
+  });
 
   return (
     <div className="container mx-auto py-8">
@@ -44,7 +53,12 @@ export default async function UsersPage(props: {
         </div>
         <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
           <Search placeholder="Search users..." />
-          <CreateOrganization />
+          <CreateUser organizations={organizations.data.map((org) => {
+            return {
+              id: org.id,
+              name: org.name,
+            }
+          })} />
         </div>
         <Suspense
           key={query + currentPage}
@@ -56,12 +70,17 @@ export default async function UsersPage(props: {
               name: obj.username,
               firstName: obj.firstName,
               lastName: obj.lastName,
-              createdAt: obj.createdAt
+              createdAt: obj.createdAt,
             }
           })} />
         </Suspense>
         <div className="mt-5 flex w-full justify-center">
-          <Pagination page={currentPage} offset={currentPage * LIMIT} limit={LIMIT} total={users.totalCount} />
+          <Pagination 
+            page={currentPage} 
+            offset={(currentPage - 1) * LIMIT} 
+            limit={LIMIT} 
+            total={Math.ceil(users.totalCount / LIMIT)}
+          />
         </div>
       </div>
     </div>

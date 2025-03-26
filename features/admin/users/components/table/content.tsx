@@ -55,10 +55,10 @@ export function UsersTable({
 }: {
   users: {
     id: string;
-    name: string;
-    address: string;
-    phone: string;
-    createdAt: Date;
+    name: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    createdAt: number;
   }[];
 }) {
   const [editingUser, setEditingUser] = useState<any>(null);
@@ -66,7 +66,7 @@ export function UsersTable({
 
   const handleDelete = (user: any) => {
     const action = deleteUser.bind(null, user.id);
-    
+
     toast.promise(action(), {
       loading: "Deleting useranization...",
       success: "useranization deleted successfully!",
@@ -87,8 +87,8 @@ export function UsersTable({
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead className="hidden md:table-cell">Address</TableHead>
-            <TableHead className="hidden md:table-cell">Phone</TableHead>
+            <TableHead className="hidden md:table-cell">First Name</TableHead>
+            <TableHead className="hidden md:table-cell">Last Name</TableHead>
             <TableHead className="hidden md:table-cell">Created</TableHead>
             <TableHead className="w-[80px]">Actions</TableHead>
           </TableRow>
@@ -99,10 +99,10 @@ export function UsersTable({
               <TableRow key={user.id}>
                 <TableCell className="font-medium">{user.name}</TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {user.address}
+                  {user.firstName}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {user.phone}
+                  {user.lastName}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {new Date(user.createdAt).toLocaleString()}
@@ -157,10 +157,7 @@ export function UsersTable({
             </DialogDescription>
           </DialogHeader>
           {editingUser && (
-            <EditUser
-              user={editingUser}
-              onClose={() => setEditingUser(null)}
-            />
+            <EditUser user={editingUser} onClose={() => setEditingUser(null)} />
           )}
         </DialogContent>
       </Dialog>

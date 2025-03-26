@@ -5,21 +5,59 @@ import { adminClient } from "@/lib/safe-actions";
 import { clerkClient } from "@clerk/nextjs/server";
 
 import { z } from "zod";
-import { userEditSchema } from "../../schemas/users";
+import { userSchema } from "../../schemas/users";
 
-
-
-  export const edit = adminClient
-  .schema(userEditSchema)
-  .bindArgsSchemas<[userId: z.ZodString]>([z.string()])
+export const create = adminClient
+  .schema(userSchema)
   .action(
     async ({
       parsedInput: {
-        username,
+        email,
         firstName,
         lastName,
         password,
+        confirmPassword,
+        role,
+        school,
       },
+    }) => {
+      try {
+        const client = await clerkClient();
+
+        const newUser = await client.users.createUser({
+          emailAddress: [email],
+          firstName,
+          lastName,
+          password,
+          createdAt: new Date(),
+          publicMetadata: {
+            school,
+            onboardingComplete: true,
+          },
+        });
+
+        if (school) {
+          await client.organizations.createOrganizationMembership({
+            organizationId: school.id,
+            userId: newUser.id,
+            role: role,
+          });
+        }
+
+        return { message: "User created successfully!" };
+      } catch (err) {
+        console.log(err);
+        return { error: "There was an error creating the user." };
+      }
+    }
+  );
+
+export const edit = adminClient
+  .schema(userSchema)
+  .bindArgsSchemas<[userId: z.ZodString]>([z.string()])
+  .action(
+    async ({
+      parsedInput: { username, firstName, lastName, password },
       bindArgsParsedInputs: [userId],
     }) => {
       try {
@@ -40,21 +78,17 @@ import { userEditSchema } from "../../schemas/users";
     }
   );
 
-  export const deleteUser = adminClient
+export const deleteUser = adminClient
   .bindArgsSchemas<[userId: z.ZodString]>([z.string()])
-  .action(
-    async ({
-      bindArgsParsedInputs: [userId],
-    }) => {
-      try {
-        const client = await clerkClient();
+  .action(async ({ bindArgsParsedInputs: [userId] }) => {
+    try {
+      const client = await clerkClient();
 
-        await client.users.deleteUser(userId);
+      await client.users.deleteUser(userId);
 
-        return { message: "User deleted successfully!" };
-      } catch (err) {
-        console.log(err);
-        return { error: "There was an error updating the user metadata." };
-      }
+      return { message: "User deleted successfully!" };
+    } catch (err) {
+      console.log(err);
+      return { error: "There was an error updating the user metadata." };
     }
-  );
+  });

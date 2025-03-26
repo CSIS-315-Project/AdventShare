@@ -16,7 +16,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import {
+  Check,
+  ChevronsUpDown,
+  Command as CommandIcon,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -28,34 +33,52 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { create } from "@/features/admin/organizations/server/actions/organizations";
+import { create } from "@/features/admin/users/server/actions/users";
 
-import { organizationSchema } from "@/features/admin/organizations/schemas/organization";
+import { userSchema } from "@/features/admin/users/schemas/users";
+import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 
-export function CreateOrganization() {
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+
+export function CreateUser({
+  organizations,
+}: {
+  organizations: {
+    id: string;
+    name: string;
+  }[];
+}) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const action = create
-
-  const form = useForm<z.infer<typeof organizationSchema>>({
-    resolver: zodResolver(organizationSchema),
+  const form = useForm<z.infer<typeof userSchema>>({
+    resolver: zodResolver(userSchema),
     defaultValues: {
-      name: "",
-      address: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      phone: "",
+      firstName: "",
+      lastName: "",
       email: "",
-      website: "",
-      description: "",
+      password: "",
+      confirmPassword: "",
+      role: "user",
+      school: undefined,
     },
   });
 
-  function onSubmit(values: z.infer<typeof organizationSchema>) {
+  function onSubmit(values: z.infer<typeof userSchema>) {
     setIsSubmitting(true);
 
-    toast.promise(action(values), {
+    toast.promise(create(values), {
       loading: "Creating organization...",
       success: "Organization created successfully!",
       error: (err) => {
@@ -70,23 +93,21 @@ export function CreateOrganization() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Create Organization</Button>
+        <Button>Create User</Button>
       </DialogTrigger>
       <DialogContent className="pt-6">
-        <DialogTitle>
-          Create a New Organization
-        </DialogTitle>
+        <DialogTitle>Create a New User</DialogTitle>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="name"
+                name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>School Name</FormLabel>
+                    <FormLabel>First Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter school name" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -95,12 +116,12 @@ export function CreateOrganization() {
 
               <FormField
                 control={form.control}
-                name="phone"
+                name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
+                    <FormLabel>Last Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="(555) 123-4567" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -114,7 +135,7 @@ export function CreateOrganization() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="school@example.com" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -123,14 +144,13 @@ export function CreateOrganization() {
 
               <FormField
                 control={form.control}
-                name="website"
+                name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Website</FormLabel>
+                    <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://www.school.edu" {...field} />
+                      <Input {...field} />
                     </FormControl>
-                    <FormDescription>Optional</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -138,90 +158,110 @@ export function CreateOrganization() {
 
               <FormField
                 control={form.control}
-                name="address"
+                name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Street Address</FormLabel>
+                    <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input placeholder="123 Education St" {...field} />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <div className="grid grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City</FormLabel>
-                      <FormControl>
-                        <Input placeholder="City" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="state"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>State</FormLabel>
-                      <FormControl>
-                        <Input placeholder="State" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="zipCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Zip Code</FormLabel>
-                      <FormControl>
-                        <Input placeholder="12345" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="school"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>School</FormLabel>
+                    <FormControl>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className="w-full justify-between truncate"
+                          >
+                            {field?.value?.id
+                              ? organizations.find(
+                                  (org) => org.id === field.value?.id
+                                )?.name
+                              : "Select school..."}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="p-0">
+                          <Command className="flex flex-col gap-2">
+                            <CommandInput
+                              placeholder="Search schools..."
+                              onValueChange={(search) => {
+                                const url = new URL(window.location.href);
+                                url.searchParams.set("organization", search);
+                                window.history.pushState(
+                                  {},
+                                  "",
+                                  url.toString()
+                                );
+                              }}
+                            />
+                            <CommandList>
+                              <CommandEmpty>No schools found.</CommandEmpty>
+                              <CommandGroup>
+                                {organizations.map((org) => (
+                                  <CommandItem
+                                    key={org.id}
+                                    value={org.name}
+                                    onSelect={() => {
+                                      field.onChange({
+                                        id: org.id,
+                                        name: org.name,
+                                      });
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value?.id === org.id
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {org.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Enter details about the school..."
-                      className="min-h-[120px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Optional. Provide additional information about the school.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <div className="flex justify-end">
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Create School
+                Create User
               </Button>
             </div>
           </form>
