@@ -40,8 +40,6 @@ export default function Skeleton() {
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            {/* <TableHead className="hidden md:table-cell">Address</TableHead>
-            <TableHead className="hidden md:table-cell">Phone</TableHead> */}
             <TableHead className="hidden md:table-cell">Created</TableHead>
             <TableHead className="w-[80px]">Actions</TableHead>
           </TableRow>
@@ -50,12 +48,6 @@ export default function Skeleton() {
           {new Array(3).map((org) => (
             <TableRow key={org.id}>
               <TableCell className="font-medium">{org.name}</TableCell>
-              {/* <TableCell className="hidden md:table-cell">
-                  {org.address}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {org.phone}
-                </TableCell> */}
               <TableCell className="hidden md:table-cell">
                 {org.createdAt}
               </TableCell>

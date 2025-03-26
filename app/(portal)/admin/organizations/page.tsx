@@ -2,7 +2,7 @@ import { OrganizationsTable } from "@/features/admin/organizations/components/ta
 
 import { Separator } from "@/components/ui/separator";
 import { CreateOrganization } from "@/features/admin/organizations/components/forms/create";
-import Search from "@/features/admin/organizations/components/search";
+import Search from "@/components/search";
 
 import { Suspense } from 'react';
 import Pagination from "@/components/pagination";
