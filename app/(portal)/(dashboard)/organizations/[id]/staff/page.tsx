@@ -51,7 +51,7 @@ export default async function OrganizationPage({
       <div className="w-full">
         <div className="flex w-full items-center justify-between">
           <h2 className="text-2xl">Members</h2>
-          <InviteStaffDialog />
+          <InviteStaffDialog organizationId={organization.id} />
         </div>
         <div className="mt-4 space-y-4">
           <Search placeholder="Search members..." />

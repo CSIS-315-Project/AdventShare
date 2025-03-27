@@ -1,28 +1,27 @@
-"use server"
+"use server";
 
-import { auth, clerkClient } from "@clerk/nextjs";
+import { organizationAdminClient } from "@/lib/safe-actions";
+
+import { clerkClient } from "@clerk/nextjs/server";
 import { inviteStaffSchema } from "../../schemas/staff";
+import { z } from "zod";
 
-export async function inviteStaffMember(data: {
-  email: string;
-  role: string;
-  organizationId: string;
-}) {
-  const { orgId } = auth();
-  
-  if (!orgId) throw new Error("Unauthorized");
+export const invite = organizationAdminClient
+  .schema(inviteStaffSchema)
+  .bindArgsSchemas<[organizationId: z.ZodString]>([z.string()])
+  .action(
+    async ({
+      parsedInput: { email, role },
+      bindArgsParsedInputs: [organizationId],
+    }) => {
+      const client = await clerkClient();
 
-  const validated = inviteStaffSchema.parse(data);
+      await client.organizations.createOrganizationInvitation({
+        organizationId,
+        emailAddress: email,
+        role: role,
+      });
 
-  try {
-    await clerkClient.organizations.createOrganizationInvitation({
-      organizationId: orgId,
-      emailAddress: validated.email,
-      role: validated.role,
-    });
-
-    return { success: true };
-  } catch (error) {
-    return { error: "Failed to invite staff member" };
-  }
-} 
+      return { success: true };
+    }
+  );

@@ -26,7 +26,7 @@ import {
 import { Label } from "@/components/ui/label";
 
 export default function Header() {
-    const searchParams = useSearchParams();
+  const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
 
@@ -40,8 +40,8 @@ export default function Header() {
     replace(`${pathname}?${params.toString()}`);
   }
 
-    return (
-        <CardHeader>
+  return (
+    <CardHeader>
       <CardTitle>Users</CardTitle>
       <CardDescription>
         Manage user accounts, permissions, and authentication settings.
@@ -87,5 +87,5 @@ export default function Header() {
         {/* <CreateOrganization /> */}
       </div>
     </CardHeader>
-    )
+  );
 }

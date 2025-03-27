@@ -17,18 +17,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
-import { inviteStaffMember } from "../../server/actions/invite";
+import { invite } from "@/features/dashboard/organizations/server/actions/invite";
 
-export function InviteStaffDialog() {
+export function InviteStaffDialog({
+  organizationId,
+}: {
+  organizationId: string;
+}) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("STAFF");
+  const [role, setRole] = useState<"ADMIN" | "MANAGER" | "STAFF">("STAFF");
+
+  const inviteStaffMember = invite.bind(null, organizationId);
 
   const handleSubmit = async () => {
     await inviteStaffMember({
       email,
       role,
-      organizationId: "", // This will be handled by Clerk auth context
     });
     setOpen(false);
   };
@@ -42,15 +47,17 @@ export function InviteStaffDialog() {
         <DialogHeader>
           <DialogTitle>Invite Staff Member</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-4 gap-3">
           <Input
+            className="col-span-3"
             placeholder="Email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Select value={role} onValueChange={setRole}>
-            <SelectTrigger>
+          <Select value={role} onValueChange={(value: "ADMIN" | "MANAGER" | "STAFF") => setRole(value)}>
+            <SelectTrigger className="col-span-1 w-full">
               <SelectValue placeholder="Select role" />
             </SelectTrigger>
             <SelectContent>
@@ -59,6 +66,7 @@ export function InviteStaffDialog() {
               <SelectItem value="STAFF">Staff</SelectItem>
             </SelectContent>
           </Select>
+          </div>
           <Button onClick={handleSubmit}>Send Invitation</Button>
         </div>
       </DialogContent>
