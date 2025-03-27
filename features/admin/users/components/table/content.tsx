@@ -37,7 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { EditOrganizationForm } from "../forms/edit";
+import { EditUser } from "../forms/edit";
 import {
   ChevronLeft,
   ChevronRight,
@@ -47,38 +47,38 @@ import {
   Trash2,
 } from "lucide-react";
 import { CardContent } from "@/components/ui/card";
-import { deleteOrganization } from "../../server/actions/organizations";
+import { deleteUser } from "../../server/actions/users";
 import { toast } from "sonner";
 
-export function OrganizationsTable({
-  organizations = [],
+export function UsersTable({
+  users = [],
 }: {
-  organizations: {
+  users: {
     id: string;
-    name: string;
-    address: string;
-    phone: string;
+    name: string | null;
+    firstName: string | null;
+    lastName: string | null;
     createdAt: number;
   }[];
 }) {
-  const [editingOrg, setEditingOrg] = useState<any>(null);
-  const [deletingOrg, setDeletingOrg] = useState<any>(null);
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [deletingUser, setDeletingUser] = useState<any>(null);
 
-  const handleDelete = (org: any) => {
-    const action = deleteOrganization.bind(null, org.id);
-    
+  const handleDelete = (user: any) => {
+    const action = deleteUser.bind(null, user.id);
+
     toast.promise(action(), {
-      loading: "Deleting organization...",
-      success: "Organization deleted successfully!",
+      loading: "Deleting useranization...",
+      success: "useranization deleted successfully!",
       error: (err) => {
         return `Error: ${err}`;
       },
     });
 
-    // Pull the org from organizations.
-    organizations = organizations.filter((o) => o.id !== org.id);
+    // Pull the user from users.
+    users = users.filter((o) => o.id !== user.id);
 
-    setDeletingOrg(null);
+    setDeletingUser(null);
   };
 
   return (
@@ -87,25 +87,25 @@ export function OrganizationsTable({
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead className="hidden md:table-cell">Address</TableHead>
-            <TableHead className="hidden md:table-cell">Phone</TableHead>
+            <TableHead className="hidden md:table-cell">First Name</TableHead>
+            <TableHead className="hidden md:table-cell">Last Name</TableHead>
             <TableHead className="hidden md:table-cell">Created</TableHead>
             <TableHead className="w-[80px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {organizations.length > 0 ? (
-            organizations.map((org) => (
-              <TableRow key={org.id}>
-                <TableCell className="font-medium">{org.name}</TableCell>
+          {users.length > 0 ? (
+            users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell className="font-medium">{user.name}</TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {org.address}
+                  {user.firstName}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {org.phone}
+                  {user.lastName}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {new Date(org.createdAt).toLocaleString()}
+                  {new Date(user.createdAt).toLocaleString()}
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -118,13 +118,13 @@ export function OrganizationsTable({
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setEditingOrg(org)}>
+                      <DropdownMenuItem onClick={() => setEditingUser(user)}>
                         <Pencil className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
-                        onClick={() => setDeletingOrg(org)}
+                        onClick={() => setDeletingUser(user)}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
@@ -137,46 +137,43 @@ export function OrganizationsTable({
           ) : (
             <TableRow>
               <TableCell colSpan={6} className="h-24 text-center">
-                No organizations found.
+                No users found.
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
 
-      {/* Edit Organization Dialog */}
+      {/* Edit useranization Dialog */}
       <Dialog
-        open={!!editingOrg}
-        onOpenChange={(open) => !open && setEditingOrg(null)}
+        open={!!editingUser}
+        onOpenChange={(open) => !open && setEditingUser(null)}
       >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Edit Organization</DialogTitle>
+            <DialogTitle>Edit useranization</DialogTitle>
             <DialogDescription>
-              Update the details for {editingOrg?.name}
+              Update the details for {editingUser?.name}
             </DialogDescription>
           </DialogHeader>
-          {editingOrg && (
-            <EditOrganizationForm
-              organization={editingOrg}
-              onClose={() => setEditingOrg(null)}
-            />
+          {editingUser && (
+            <EditUser user={editingUser} onClose={() => setEditingUser(null)} />
           )}
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog
-        open={!!deletingOrg}
-        onOpenChange={(open) => !open && setDeletingOrg(null)}
+        open={!!deletingUser}
+        onOpenChange={(open) => !open && setDeletingUser(null)}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the
-              organization
-              <strong> {deletingOrg?.name} </strong>
+              useranization
+              <strong> {deletingUser?.name} </strong>
               and all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -184,7 +181,7 @@ export function OrganizationsTable({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => handleDelete(deletingOrg)}
+              onClick={() => handleDelete(deletingUser)}
             >
               Delete
             </AlertDialogAction>

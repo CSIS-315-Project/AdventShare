@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronRight, Home, type LucideIcon } from "lucide-react"
+import { ChevronRight, Home, Shield, Users, type LucideIcon } from "lucide-react"
 
 import {
   Collapsible,
@@ -19,39 +19,35 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 
-const items = [{
-  title: "Dashboard",
-  url: "/admin",
-  icon: Home,
-}, {
-  title: "Users",
-  url: "/admin/users",
-  icon: Home,
-}, {
-  title: "Organizations",
-  url: "/admin/organizations",
-  icon: Home,
-}] as {
-  title: string
-  url: string
-  icon: LucideIcon
-  isActive?: boolean
-  items?: {
+export function SidebarMain({ id }: { id?: string }) {
+  const items = [{
+    title: "Dashboard",
+    url: `/organizations/${id}`,
+    icon: Home,
+  }, {
+    title: "Staff",
+    url: `/organizations/${id}/staff`,
+    icon: Users,
+  }] as {
     title: string
     url: string
+    icon: LucideIcon
+    isActive?: boolean
+    items?: {
+      title: string
+      url: string
+    }[]
   }[]
-}[]
 
-export function SidebarMain() {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>School Management</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip={item.title}>
-                <a href={item.url}>
+            <SidebarMenuItem aria-disabled={!id}>
+              <SidebarMenuButton disabled={!id} asChild tooltip={item.title}>
+                <a href={item.url} aria-disabled={!id}>
                   <item.icon />
                   <span>{item.title}</span>
                 </a>
@@ -67,9 +63,9 @@ export function SidebarMain() {
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubItem aria-disabled={!id} key={subItem.title}>
                           <SidebarMenuSubButton asChild>
-                            <a href={subItem.url}>
+                            <a href={subItem.url} aria-disabled={!id}>
                               <span>{subItem.title}</span>
                             </a>
                           </SidebarMenuSubButton>

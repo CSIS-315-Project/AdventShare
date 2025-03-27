@@ -2,7 +2,7 @@ import { OrganizationsTable } from "@/features/admin/organizations/components/ta
 
 import { Separator } from "@/components/ui/separator";
 import { CreateOrganization } from "@/features/admin/organizations/components/forms/create";
-import Search from "@/features/admin/organizations/components/search";
+import Search from "@/components/search";
 
 import { Suspense } from 'react';
 import Pagination from "@/components/pagination";
@@ -24,7 +24,7 @@ export default async function AdministrationPage(props: {
   const organizations = await getOrganizations({
     query,
     limit: LIMIT,
-    offset: (currentPage - 1) * 10,
+    offset: (currentPage - 1) * LIMIT,
   })
 
   return (
@@ -40,10 +40,10 @@ export default async function AdministrationPage(props: {
 
       <div className="w-full">
         <div className="flex w-full items-center justify-between">
-          <h1 className={`text-2xl`}>Invoices</h1>
+          <h1 className={`text-2xl`}>Organizations</h1>
         </div>
         <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-          <Search placeholder="Search invoices..." />
+          <Search placeholder="Search orgs..." />
           <CreateOrganization />
         </div>
         <Suspense

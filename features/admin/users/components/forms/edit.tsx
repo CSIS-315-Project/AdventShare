@@ -17,47 +17,35 @@ import { Input } from "@/components/ui/input";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { organizationEditSchema } from "../../schemas/organization";
-import { edit } from "../../server/actions/organizations";
+import { userEditSchema } from "../../schemas/users";
+import { edit } from "../../server/actions/users";
 
 interface EditOrganizationFormProps {
-  organization: {
+  user: {
     id: string;
-    name: string;
-    address: string;
-    phone: string;
+    username: string;
+    firstName: string;
+    lastName: string;
   };
   onClose: () => void;
 }
 
-const action = new Promise((resolve, reject) => {
-  setTimeout(() => {
-    if (Math.random() > 0.5) {
-      resolve("Success");
-    } else {
-      reject("Failed");
-    }
-  }, 2000);
-});
-
-export function EditOrganizationForm({
-  organization,
-  onClose,
-}: EditOrganizationFormProps) {
+export function EditUser({ user, onClose }: EditOrganizationFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<z.infer<typeof organizationEditSchema>>({
-    resolver: zodResolver(organizationEditSchema),
+  const form = useForm<z.infer<typeof userEditSchema>>({
+    resolver: zodResolver(userEditSchema),
     defaultValues: {
-      name: organization.name,
-      address: organization.address,
-      phone: organization.phone,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      password: "",
     },
   });
 
-  const action = edit.bind(null, organization.id);
+  const action = edit.bind(null, user.id);
 
-  function onSubmit(values: z.infer<typeof organizationEditSchema>) {
+  function onSubmit(values: z.infer<typeof userEditSchema>) {
     setIsSubmitting(true);
 
     toast.promise(action(values), {
@@ -76,7 +64,7 @@ export function EditOrganizationForm({
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <FormField
             control={form.control}
-            name="name"
+            name="username"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>School Name</FormLabel>
@@ -90,7 +78,7 @@ export function EditOrganizationForm({
 
           <FormField
             control={form.control}
-            name="phone"
+            name="firstName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Phone Number</FormLabel>
@@ -104,10 +92,24 @@ export function EditOrganizationForm({
 
           <FormField
             control={form.control}
-            name="address"
+            name="lastName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Address</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>New Password</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
