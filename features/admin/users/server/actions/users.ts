@@ -5,7 +5,7 @@ import { adminClient } from "@/lib/safe-actions";
 import { clerkClient } from "@clerk/nextjs/server";
 
 import { z } from "zod";
-import { userSchema } from "../../schemas/users";
+import { userSchema, userEditSchema } from "../../schemas/users";
 
 export const create = adminClient
   .schema(userSchema)
@@ -60,7 +60,7 @@ export const create = adminClient
   );
 
 export const edit = adminClient
-  .schema(userSchema)
+  .schema(userEditSchema)
   .bindArgsSchemas<[userId: z.ZodString]>([z.string()])
   .action(
     async ({

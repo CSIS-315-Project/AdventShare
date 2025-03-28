@@ -23,7 +23,7 @@ import { edit } from "../../server/actions/users";
 interface EditOrganizationFormProps {
   user: {
     id: string;
-    username: string;
+    name: string;
     firstName: string;
     lastName: string;
   };
@@ -36,7 +36,7 @@ export function EditUser({ user, onClose }: EditOrganizationFormProps) {
   const form = useForm<z.infer<typeof userEditSchema>>({
     resolver: zodResolver(userEditSchema),
     defaultValues: {
-      username: user.username,
+      username: user.name,
       firstName: user.firstName,
       lastName: user.lastName,
       password: "",
@@ -49,8 +49,8 @@ export function EditUser({ user, onClose }: EditOrganizationFormProps) {
     setIsSubmitting(true);
 
     toast.promise(action(values), {
-      loading: "Updating organization...",
-      success: "Organization updated successfully!",
+      loading: "Updating user...",
+      success: "User updated successfully!",
       error: (err) => {
         return `Error: ${err}`;
       },
@@ -67,7 +67,7 @@ export function EditUser({ user, onClose }: EditOrganizationFormProps) {
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>School Name</FormLabel>
+                <FormLabel>Username</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -106,7 +106,7 @@ export function EditUser({ user, onClose }: EditOrganizationFormProps) {
 
           <FormField
             control={form.control}
-            name="lastName"
+            name="password"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>New Password</FormLabel>

@@ -16,6 +16,8 @@ import { SidebarSecondary } from "@/features/dashboard/organizations/components/
 import { SidebarTertiary } from "@/features/dashboard/organizations/components/sidebar/SidebarTertiary";
 import { SidebarUser } from "@/features/dashboard/organizations/components/sidebar/SidebarUser";
 
+import Link from "next/link";
+
 export async function OrganizationsSidebar({ id }: { id?: string }) {
   const user = await currentUser();
 
@@ -29,7 +31,7 @@ export async function OrganizationsSidebar({ id }: { id?: string }) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <Link href="/">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <Image src="/Logo.png" alt="Logo" height={50} width={50} />
                 </div>
@@ -37,7 +39,7 @@ export async function OrganizationsSidebar({ id }: { id?: string }) {
                   <span className="truncate font-semibold">AdventShare</span>
                   <span className="truncate text-xs">Organizations</span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

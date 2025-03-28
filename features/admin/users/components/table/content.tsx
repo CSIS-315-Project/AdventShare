@@ -151,7 +151,7 @@ export function UsersTable({
       >
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Edit useranization</DialogTitle>
+            <DialogTitle>Edit User</DialogTitle>
             <DialogDescription>
               Update the details for {editingUser?.name}
             </DialogDescription>
