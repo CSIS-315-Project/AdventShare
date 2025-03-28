@@ -10,9 +10,19 @@ import {
 } from "@/features/landing-page/server/db/items";
 
 export default async function Page() {
-  const newestItems = await getNewestItems();
+  const newestItems = [];
+  const myItems = [];
+
   const user = await auth();
-  const myItems = await getMyItems(user.userId as string);
+  if (user?.userId) {
+    const [fetchedNewestItems, fetchedMyItems] = await Promise.all([
+      getNewestItems(),
+      getMyItems(user.userId),
+    ]);
+    newestItems.push(...fetchedNewestItems);
+    myItems.push(...fetchedMyItems);
+  }
+
   return (
     <main className="min-h-screen flex flex-col">
       <div className="flex-1 p-4">

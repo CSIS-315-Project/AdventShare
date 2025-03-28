@@ -17,13 +17,9 @@ export default function ItemCard({
   const formatedPostedTime = new Date(postedTime).toLocaleDateString();
 
   return (
-    <div className="border p-4 rounded">
+    <div className="border p-4 rounded shadow hover:shadow-lg hover:cursor-pointer transition">
       {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt={title}
-          className="w-full h-40 object-cover"
-        />
+        <img src={imageUrl} alt={title} className="w-full h-40 object-cover" />
       ) : (
         <div className="h-40 bg-gray-200 flex items-center justify-center">
           No Image Available

@@ -1,7 +1,9 @@
 import "server-only";
 
-import { supabase } from "@/lib/supabase/server";
-// import clerkClient from "@/lib/auth";
+import { createClerkSupabaseClientSsr } from "@/lib/supabase/client";
+
+// Create a Supabase client instance for server-side operations
+const supabase = await createClerkSupabaseClientSsr();
 
 // Fetch Latest Items
 export async function getNewestItems() {
