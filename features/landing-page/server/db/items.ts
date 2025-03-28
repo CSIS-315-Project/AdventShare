@@ -1,6 +1,6 @@
 import "server-only";
 
-import supabase from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/server";
 // import clerkClient from "@/lib/auth";
 
 // Fetch Latest Items
