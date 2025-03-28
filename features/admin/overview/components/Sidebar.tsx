@@ -44,8 +44,8 @@ export async function AdminSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMain />
-        <SidebarSecondary />
-        <SidebarTertiary className="mt-auto" />
+        {/* <SidebarSecondary /> */}
+        {/* <SidebarTertiary className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
         <SidebarUser user={{
