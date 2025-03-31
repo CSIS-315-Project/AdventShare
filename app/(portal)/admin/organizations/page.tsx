@@ -61,7 +61,7 @@ export default async function AdministrationPage(props: {
           })} />
         </Suspense>
         <div className="mt-5 flex w-full justify-center">
-          <Pagination page={currentPage} offset={currentPage * LIMIT} limit={LIMIT} total={organizations.totalCount} />
+          <Pagination page={currentPage} offset={currentPage * LIMIT} limit={LIMIT} total={Math.ceil(organizations.totalCount / LIMIT)} />
         </div>
       </div>
     </div>

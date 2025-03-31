@@ -13,18 +13,18 @@ export default async function PostsPage({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams?: {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{
     query?: string;
     page?: string;
-  };
+  }>;
 }) {
-  const query = searchParams?.query || "";
-  const currentPage = Math.max(1, Number(searchParams?.page) || 1);
+  const query = (await searchParams)?.query || "";
+  const currentPage = Math.max(1, Number((await searchParams)?.page) || 1);
   const LIMIT = 10;
 
   const posts = await getOrganizationPosts({
-    organizationId: params.id,
+    organizationId: (await params).id,
     query,
     limit: LIMIT,
     offset: (currentPage - 1) * LIMIT,
