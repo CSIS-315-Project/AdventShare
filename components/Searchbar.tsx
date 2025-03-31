@@ -1,24 +1,42 @@
+"use client";
+
 import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function Searchbar() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+  const handleSearch = (e: any) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/items?search=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   return (
-    <div
-      id="search-bar"
-      className="flex flex-row focus-within:ring-2 focus-within:ring-blue-400 focus-within:ring-opacity-50 focus-within:rounded-sm"
-    >
-      <select className="rounded-l-sm border-2 border-r-0 border-gray-300 p-2 focus:outline-none bg-slate-200">
+    <form className="flex w-full max-w-4xl" onSubmit={handleSearch}>
+      <select className="rounded-l-sm border border-r-0 border-gray-300 px-2 focus:outline-none bg-slate-200">
         <option value="all">All</option>
         <option value="items">Items</option>
         <option value="users">Users</option>
       </select>
-      <input
-        type="text"
-        placeholder="Search AdventShare"
-        className="border-y-2 border-gray-300 p-2 w-96 focus:outline-none"
+      <Input
+        type="search"
+        placeholder="Search AdventShare..."
+        className="flex-grow rounded-r-none rounded-l-none border-r-0 bg-white text-black focus-visible:ring-0 focus-visible:ring-offset-0"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
       />
-      <button className="bg-blue-600 text-white rounded-r-sm p-2 px-4 focus:outline-none">
-        <Search />
-      </button>
-    </div>
+      <Button
+        type="submit"
+        className="rounded-l-none bg-[#003B5C] hover:bg-[#003B5C] text-white"
+      >
+        <Search className="h-4 w-4" />
+      </Button>
+    </form>
   );
 }
