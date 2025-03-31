@@ -5,9 +5,9 @@ import { getItems } from "@/features/items/server/db/items";
 export default async function ItemsPage({
   searchParams,
 }: {
-  searchParams: { search?: string };
+  searchParams: Promise<{ search?: string }>;
 }) {
-  const searchQuery = searchParams?.search || null;
+  const searchQuery = (await searchParams)?.search || null;
   const items = await getItems(searchQuery);
 
   return (
