@@ -24,10 +24,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { CreateOrganization } from "../forms/create";
+import { CreateUser } from "../forms/create";
 
-export default function Header() {
-    const searchParams = useSearchParams();
+export default function Header({
+  organizations,
+}: {
+  organizations: {
+    id: string;
+    name: string;
+  }[];
+}) {
+  const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
 
@@ -41,8 +48,8 @@ export default function Header() {
     replace(`${pathname}?${params.toString()}`);
   }
 
-    return (
-        <CardHeader>
+  return (
+    <CardHeader>
       <CardTitle>Users</CardTitle>
       <CardDescription>
         Manage user accounts, permissions, and authentication settings.
@@ -85,8 +92,8 @@ export default function Header() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <CreateOrganization />
+        <CreateUser organizations={organizations} />
       </div>
     </CardHeader>
-    )
+  );
 }
