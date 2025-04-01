@@ -35,7 +35,7 @@ export default function Navbar() {
         <div className="flex items-center space-x-4">
           <SignedIn>
             <nav className="hidden md:flex space-x-4">
-              <NavLink href="/post-item">Post</NavLink>
+              <NavLink href="/items/post">Post</NavLink>
               <NavLink href="/claims">Claims</NavLink>
               <NavLink href="/Profile">Profile</NavLink>
             </nav>
