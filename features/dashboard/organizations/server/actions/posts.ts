@@ -2,8 +2,6 @@
 
 import { adminClient } from "@/lib/safe-actions";
 
-import { clerkClient } from "@clerk/nextjs/server";
-
 import {supabase} from "@/lib/supabase/server";
 
 import { EditSchema } from "../../schemas/posts";
@@ -26,15 +24,19 @@ export const edit = adminClient
       try {
         // Use supabase and edit the post.
         const { data, error } = await supabase
-          .from("posts")
+          .from("items")
           .update({
             name,
             description,
             quantity,
-            category_id,
+            subcategory_id: category_id,
             is_public,
           })
           .eq("id", postId);
+
+        if (error) {
+          throw new Error(error.message);
+        }
 
         return { message: "Post updated successfully!" };
       } catch (err) {

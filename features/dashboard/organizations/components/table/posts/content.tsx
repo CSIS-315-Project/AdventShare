@@ -36,7 +36,7 @@ export interface Post {
   user_id: string;
   organization_id: string;
   quantity: number;
-  category_id: string;
+  subcategory_id: string;
   updated_at: Date;
   is_public: boolean;
   user: {
@@ -51,7 +51,7 @@ export interface Post {
   };
 }
 
-export function PostsTable({ posts }: { posts: Post[] }) {
+export function PostsTable({ posts, categories }: { posts: Post[]; categories: { name: string; id: string }[] }) {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   return (
     <div className="rounded-md border">
@@ -140,6 +140,7 @@ export function PostsTable({ posts }: { posts: Post[] }) {
           {editingPost && (
             <EditPost
               post={editingPost}
+              categories={categories}
               onClose={() => setEditingPost(null)}
             />
           )}
