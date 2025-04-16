@@ -125,11 +125,19 @@ export async function getMyItems(userId: string) {
           (foundUser.firstName || "") + " " + (foundUser.lastName || ""); // Fallback to empty string if last name is not available
       }
 
-      const foundOrganization = await auth.organizations.getOrganization({
-        organizationId: item.organization_id,
-      }); // Use organization_id directly as a string
-      if (foundOrganization) {
-        organizationName = foundOrganization.name; // Fallback to empty string if organization name is not available
+      // Fetch organization details
+      if (item.organization_id) {
+        try {
+          const foundOrganization = await auth.organizations.getOrganization({
+            organizationId: item.organization_id,
+          });
+          console.log("foundOrganization", foundOrganization);
+          if (foundOrganization) {
+            organizationName = foundOrganization.name;
+          }
+        } catch (err) {
+          console.warn(`Failed to get organization for item ${item.id}:`, err);
+        }
       }
 
       // Fetch image from item's folder in private bucket
