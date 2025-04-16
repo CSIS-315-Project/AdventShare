@@ -12,6 +12,10 @@ export default function Searchbar() {
 
   const handleSearch = (e: any) => {
     e.preventDefault();
+    if (!searchQuery.trim()) {
+      return router.push(`/items`);
+    }
+
     if (searchQuery.trim()) {
       router.push(`/items?search=${encodeURIComponent(searchQuery)}`);
     }
