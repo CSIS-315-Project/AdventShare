@@ -27,10 +27,15 @@ export default function ListingsGrid({
         ) : (
           items.map((item, index) => (
             <ItemCard
+              id={item.id} // Ensure to pass the id for routing
               key={index}
               title={item.name}
               postedTime={item.created_at as unknown as string}
-              createdBy={item.user_id}
+              createdBy={item.organization_name || ""}
+              imageUrl={
+                item.image_url ? item.image_url : undefined
+                // Use undefined if image_url is null
+              }
             />
           ))
         )}

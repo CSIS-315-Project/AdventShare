@@ -18,7 +18,7 @@ export default function Searchbar() {
   };
 
   return (
-    <form className="flex w-full max-w-4xl" onSubmit={handleSearch}>
+    <form className="flex w-full" onSubmit={handleSearch}>
       <select className="rounded-l-sm border border-r-0 border-gray-300 px-2 focus:outline-none bg-slate-200">
         <option value="all">All</option>
         <option value="items">Items</option>
