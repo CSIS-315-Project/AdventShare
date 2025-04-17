@@ -13,7 +13,7 @@ export async function getNewestItems() {
     .select("*")
     .eq("is_public", true)
     .order("created_at", { ascending: false })
-    .limit(4); // Fetch latest 4 items
+    .limit(20); // Fetch latest 4 items
 
   if (error) {
     console.error("Error fetching items:", error);
