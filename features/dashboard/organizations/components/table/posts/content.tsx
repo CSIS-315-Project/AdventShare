@@ -15,10 +15,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { MoreHorizontal, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-interface Post {
+import { EditPost } from "../../forms/edit-post";
+import { useState } from "react";
+
+export interface Post {
   id: string;
   name: string;
   description: string | null;
@@ -26,7 +36,7 @@ interface Post {
   user_id: string;
   organization_id: string;
   quantity: number;
-  category_id: string;
+  subcategory_id: string;
   updated_at: Date;
   is_public: boolean;
   user: {
@@ -41,7 +51,8 @@ interface Post {
   };
 }
 
-export function PostsTable({ posts }: { posts: Post[] }) {
+export function PostsTable({ posts, categories }: { posts: Post[]; categories: { name: string; id: string }[] }) {
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   return (
     <div className="rounded-md border">
       <Table>
@@ -67,7 +78,9 @@ export function PostsTable({ posts }: { posts: Post[] }) {
             posts.map((post) => (
               <TableRow key={post.id}>
                 <TableCell className="font-medium">{post.name}</TableCell>
-                <TableCell>{post.description}</TableCell>
+                <TableCell className="max-w-[300px] truncate">
+                  {post.description}
+                </TableCell>
                 <TableCell>{post.quantity}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
@@ -96,7 +109,10 @@ export function PostsTable({ posts }: { posts: Post[] }) {
                       >
                         Copy post ID
                       </DropdownMenuItem>
-                      <DropdownMenuItem>Edit post</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setEditingPost(post)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
                       <DropdownMenuItem className="text-destructive">
                         Delete post
                       </DropdownMenuItem>
@@ -108,6 +124,28 @@ export function PostsTable({ posts }: { posts: Post[] }) {
           )}
         </TableBody>
       </Table>
+
+      {/* Edit Organization Dialog */}
+      <Dialog
+        open={!!editingPost}
+        onOpenChange={(open) => !open && setEditingPost(null)}
+      >
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Edit Organization</DialogTitle>
+            <DialogDescription>
+              Update the details for {editingPost?.name}
+            </DialogDescription>
+          </DialogHeader>
+          {editingPost && (
+            <EditPost
+              post={editingPost}
+              categories={categories}
+              onClose={() => setEditingPost(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

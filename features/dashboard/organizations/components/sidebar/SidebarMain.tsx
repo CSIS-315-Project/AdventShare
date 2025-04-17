@@ -18,6 +18,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
+import Link from "next/link"
 
 export function SidebarMain({ id }: { id?: string }) {
   const items = [{
@@ -47,10 +48,10 @@ export function SidebarMain({ id }: { id?: string }) {
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
             <SidebarMenuItem aria-disabled={!id}>
               <SidebarMenuButton disabled={!id} asChild tooltip={item.title}>
-                <a href={item.url} aria-disabled={!id}>
+                <Link href={item.url} aria-disabled={!id}>
                   <item.icon />
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
               {item.items?.length ? (
                 <>
@@ -65,9 +66,9 @@ export function SidebarMain({ id }: { id?: string }) {
                       {item.items?.map((subItem) => (
                         <SidebarMenuSubItem aria-disabled={!id} key={subItem.title}>
                           <SidebarMenuSubButton asChild>
-                            <a href={subItem.url} aria-disabled={!id}>
+                            <Link href={subItem.url} aria-disabled={!id}>
                               <span>{subItem.title}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}
