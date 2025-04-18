@@ -2,35 +2,68 @@
 
 import { z } from "zod";
 import { ClaimResponseSchema, type ClaimResponse } from "../../types";
+import { createClerkSupabaseClientSsr } from "@/lib/supabase/client";
 
 // Input validation schema
 const ClaimItemInputSchema = z.object({
   itemId: z.string().min(1, "Item ID is required"),
 });
 
+const claimSchema = z.object({
+  item_id: z.string(),
+  user_id: z.string(),
+  organization_id: z.string().optional(),
+  status: z.string(),
+  quantity: z.number().min(1, "Quantity must be at least 1").optional(),
+});
+
 /**
  * Server action to claim an item
- * In a real app, this would interact with your database
  */
-export async function claimItem(itemId: string): Promise<ClaimResponse> {
+export async function claimItem(
+  itemId: string,
+  userId: string,
+  quantity: number = 1,
+  organizationId?: string
+): Promise<ClaimResponse> {
   try {
     // Validate input
     const validatedInput = ClaimItemInputSchema.parse({ itemId });
+    if (!validatedInput.itemId) {
+      throw new Error("Item ID is required");
+    }
 
-    // Simulate a delay for the API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Create claim data based on schema
+    const claimData = claimSchema.parse({
+      item_id: itemId,
+      user_id: userId,
+      organization_id: organizationId,
+      status: "pending",
+      quantity: quantity,
+    });
 
-    // In a real app, you would:
-    // 1. Verify the user is authenticated
-    // 2. Check if the item is available
-    // 3. Update the item status in the database
-    // 4. Create a notification for the school
-    // 5. Return the updated item
+    console.log("Claim data:", claimData);
 
-    // Validate output with Zod schema
+    // Initialize Supabase client
+    const supabase = await createClerkSupabaseClientSsr();
+
+    // Insert claim into database
+    const { data, error } = await supabase
+      .from("claims")
+      .insert(claimData)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error inserting claim:", error);
+      throw new Error(`Database error: ${error.message}`);
+    }
+
+    // Return success response
     return ClaimResponseSchema.parse({
       success: true,
       message: "Claim request submitted successfully",
+      data,
     });
   } catch (error) {
     // Handle validation errors
