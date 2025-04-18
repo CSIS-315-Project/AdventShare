@@ -1,7 +1,7 @@
 "use client";
 
 import { Toaster } from "sonner";
-import type { Item } from "../types";
+import type { Item, SimilarItem } from "../types";
 
 import ImageGallery from "./image-gallery";
 import ItemDetails from "./item-details";
@@ -12,9 +12,13 @@ import { Separator } from "@/components/ui/separator";
 
 interface ItemViewClientProps {
   item: Item;
+  similarItems: SimilarItem[];
 }
 
-export default function ItemViewClient({ item }: ItemViewClientProps) {
+export default function ItemViewClient({
+  item,
+  similarItems,
+}: ItemViewClientProps) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Add Sonner Toaster component */}
@@ -36,7 +40,7 @@ export default function ItemViewClient({ item }: ItemViewClientProps) {
 
           <Separator />
 
-          <ClaimButton itemId={item.id} initialStatus={item.status} />
+          <ClaimButton item={item} initialStatus={item.status} />
         </div>
       </div>
 

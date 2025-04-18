@@ -1,31 +1,40 @@
-// components/Items/ItemCard.tsx
-import Image from "next/image";
 import Link from "next/link";
 
-interface ItemCardProps {
-  item: {
-    id: string;
-    name: string;
-    description: string;
-    imageUrl?: string;
-  };
-}
+// components/ItemCard.tsx
 
-export default function ItemCard({ item }: ItemCardProps) {
+type ItemCardProps = {
+  id: string; // Add an id prop
+  imageUrl?: string;
+  title: string;
+  postedTime: string;
+  createdBy: string;
+};
+
+export default function ItemCard({
+  id,
+  title,
+  imageUrl,
+  createdBy,
+  postedTime,
+}: ItemCardProps) {
   const defaultImageUrl = "/Logo2.png";
-  const image = item.imageUrl ?? defaultImageUrl;
+  const image = imageUrl || defaultImageUrl;
+
+  const formatedPostedTime = new Date(postedTime).toLocaleDateString();
+
   return (
-    <Link href={`/items/${item.id}`}>
+    <Link href={`/items/${id}`}>
       <div className="border p-4 rounded shadow hover:shadow-lg hover:cursor-pointer transition">
-        <Image
-          src={image}
-          alt={item.name}
-          width={300}
-          height={200}
-          className="rounded-lg"
-        />
-        <h3 className="text-lg font-semibold mt-2">{item.name}</h3>
-        <p className="text-gray-600">{item.description}</p>
+        {image ? (
+          <img src={image} alt={title} className="w-full h-40 object-cover" />
+        ) : (
+          <div className="h-40 bg-gray-200 flex items-center justify-center">
+            No Image Available
+          </div>
+        )}
+        <h3 className="font-medium overflow-hidden">{title}</h3>
+        <p className="text-gray-600 text-sm overflow-hidden">{createdBy}</p>
+        <p className="text-gray-600">{formatedPostedTime}</p>
       </div>
     </Link>
   );

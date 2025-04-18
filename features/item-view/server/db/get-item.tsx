@@ -113,6 +113,25 @@ export async function getItem(itemId: string): Promise<Item> {
     images = signedUrls.filter((url) => url !== null);
   }
 
+  // Fetch claimed quantity
+  const { data: claimedData } = await supabase
+    .from("claims")
+    .select("quantity")
+    .eq("item_id", item.id)
+    .eq("status", "approved");
+
+  let claimedQuantity = 0;
+  if (claimedData && claimedData.length > 0) {
+    // Sum up all claimed quantities if there are multiple claims
+    claimedQuantity = claimedData.reduce(
+      (total, claim) => total + (claim.quantity || 0),
+      0
+    );
+  }
+  // Calculate available quantity
+  const availableQuantity = item.quantity - claimedQuantity;
+  item.availableQuantity = availableQuantity;
+
   // Transform the database item into our schema format
   const formattedItem = {
     ...item,
@@ -123,6 +142,7 @@ export async function getItem(itemId: string): Promise<Item> {
     subcategory: subcategoryName,
     images: images || [],
     school: {
+      id: item.organization_id,
       name: organizationName || "Unknown Organization",
       location: item.location || "",
       contactEmail: item.contact_email || "no-reply@example.com",

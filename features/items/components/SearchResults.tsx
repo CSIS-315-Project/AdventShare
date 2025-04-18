@@ -22,7 +22,10 @@ export default function SearchResults({
           {searchQuery ? `Results for "${searchQuery}"` : "All Items"}
         </h1>
       </div>
-      <ItemsGrid items={items} />
+      <ItemsGrid
+        title={searchQuery ? `Results for "${searchQuery}"` : "All Items"}
+        items={items as any}
+      />
     </main>
   );
 }
