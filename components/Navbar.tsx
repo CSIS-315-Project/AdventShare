@@ -14,7 +14,7 @@ import {
 
 export default function Navbar() {
   return (
-    <header className="border-b  px-4 py-2 shadow">
+    <header className="border-b px-4 py-2 shadow">
       <div className="flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex flex-row gap-2 items-center">

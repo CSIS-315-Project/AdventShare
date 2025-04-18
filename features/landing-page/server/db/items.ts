@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClerkSupabaseClientSsr } from "@/lib/supabase/client";
+import { createClerkSupabaseClientSsr } from "@/lib/supabase/ssr/client";
 import { clerkClient } from "@clerk/nextjs/server";
 
 // Create a Supabase client instance for server-side operations

@@ -1,6 +1,6 @@
 import "server-only";
-import { type Item, ItemSchema } from "../../types";
-import { createClerkSupabaseClientSsr } from "@/lib/supabase/client";
+import { type Item, ItemSchema } from "@/types/item";
+import { createClerkSupabaseClientSsr } from "@/lib/supabase/ssr/client";
 import { clerkClient } from "@clerk/nextjs/server";
 
 /**
