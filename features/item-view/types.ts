@@ -2,6 +2,7 @@ import { z } from "zod";
 
 // Zod schemas for validation
 export const SchoolSchema = z.object({
+  id: z.string().optional(),
   name: z.string(),
   location: z.string().optional(),
   contactEmail: z.string().email().optional(),
@@ -16,13 +17,16 @@ export const ItemStatusSchema = z.enum([
 export const ItemSchema = z.object({
   id: z.string(),
   name: z.string(),
-  description: z.string(),
+  description: z.string().optional(),
   category: z.string().optional(),
   subcategory: z.string().optional(),
   postedDate: z.string(),
   status: ItemStatusSchema,
   images: z.array(z.string()) || null,
   school: SchoolSchema,
+  quantity: z.number().int().positive().optional(),
+  availableQuantity: z.number().int().min(0).optional(),
+  estimatedValue: z.number().nonnegative().optional(),
 });
 
 export const SimilarItemSchema = z.object({
