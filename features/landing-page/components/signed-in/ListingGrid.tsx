@@ -40,7 +40,7 @@ export default function ListingsGrid({
             {items.map((item, index) => (
               <CarouselItem
                 key={index}
-                className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 2xl:basis-1/5"
               >
                 <ItemCard
                   id={item.id}
