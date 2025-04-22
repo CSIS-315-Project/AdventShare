@@ -8,6 +8,7 @@ import Search from "@/components/search";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import PostsTableSkeleton from "@/features/dashboard/organizations/components/table/posts/skeleton";
+import { getSubcategories } from "@/lib/supabase/db";
 
 export default async function PostsPage({
   params,
@@ -30,6 +31,8 @@ export default async function PostsPage({
     offset: (currentPage - 1) * LIMIT,
   });
 
+  const categories = await getSubcategories();
+
   return (
     <div className="container mx-auto py-8">
       <div className="flex flex-col space-y-2">
@@ -49,7 +52,7 @@ export default async function PostsPage({
           <Search placeholder="Search posts..." />
           
           <Suspense fallback={<PostsTableSkeleton />}>
-            <PostsTable posts={posts.data} />
+            <PostsTable categories={categories} posts={posts.data} />
           </Suspense>
 
           <div className="mt-5 flex w-full justify-center">

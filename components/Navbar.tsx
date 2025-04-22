@@ -19,7 +19,10 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex flex-row gap-2 items-center">
           <Image src="/Logo2.png" alt="Logo" height={75} width={75} />
-          <h1 className="text-xl font-semibold" style={{ color: "#003B5C" }}>
+          <h1
+            className="text-xl font-semibold md:hidden lg:flex"
+            style={{ color: "#003B5C" }}
+          >
             AdventShare
           </h1>
         </Link>

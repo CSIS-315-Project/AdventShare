@@ -24,3 +24,23 @@ export async function getOrganizations({ limit = 10, offset = 0, query }: {
         query
     });
 }
+
+export async function isAdmin({ userId, orgSlug }: { userId: string; orgSlug?: string }) {
+    const auth = await clerkClient();
+    
+    if (!orgSlug) {
+        return false;
+    }
+    
+    const organizations = await auth.users.getOrganizationMembershipList({
+        userId
+    })
+    
+    if (!organizations || !organizations.data || organizations.data.length === 0) {
+        return false;
+    }
+
+    const orgMembership = organizations.data.find(membership => membership.organization.slug === orgSlug);
+
+    return orgMembership?.role == "admin" || orgMembership?.role == "owner";
+} 

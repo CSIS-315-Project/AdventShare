@@ -8,20 +8,30 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-
-const items = [{
-  title: "Dashboard",
-  url: "/organizations",
-  icon: Home
-}] as {
-  title: string
-  url: string
-  icon: LucideIcon
-}[]
+import Link from "next/link";
 
 export function SidebarTertiary({
+  id,
+  admin,
   ...props
-}: React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+}: {
+  id?: string;
+  admin?: boolean;
+} & React.ComponentPropsWithoutRef<typeof SidebarGroup>): React.JSX.Element {
+  if (!admin) {
+    return <></>
+  }
+  
+  const items = [{
+    title: "Settings",
+    url: `/organizations/${id}/settings`,
+    icon: Home
+  }] as {
+    title: string
+    url: string
+    icon: LucideIcon
+  }[]
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
@@ -29,10 +39,10 @@ export function SidebarTertiary({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild size="sm">
-                <a href={item.url}>
+                <Link href={item.url} aria-disabled={!id}>
                   <item.icon />
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

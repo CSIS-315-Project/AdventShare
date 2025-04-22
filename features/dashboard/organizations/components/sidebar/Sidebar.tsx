@@ -17,6 +17,7 @@ import { SidebarTertiary } from "@/features/dashboard/organizations/components/s
 import { SidebarUser } from "@/features/dashboard/organizations/components/sidebar/SidebarUser";
 
 import Link from "next/link";
+import { isAdmin } from "../../server/db/organization";
 
 export async function OrganizationsSidebar({ id }: { id?: string }) {
   const user = await currentUser();
@@ -24,6 +25,11 @@ export async function OrganizationsSidebar({ id }: { id?: string }) {
   if (!user) {
     return <div>User not found.</div>;
   }
+
+  const admin = await isAdmin({
+    userId: user.id,
+    orgSlug: id
+  });
 
   return (
     <Sidebar>
@@ -47,7 +53,7 @@ export async function OrganizationsSidebar({ id }: { id?: string }) {
       <SidebarContent>
         <SidebarMain id={id} />
         <SidebarSecondary id={id} />
-        <SidebarTertiary className="mt-auto" />
+        <SidebarTertiary id={id} admin={admin} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <SidebarUser user={{

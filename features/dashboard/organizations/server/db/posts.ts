@@ -80,7 +80,7 @@ export async function getOrganizationPosts({
       user_id: string;
       organization_id: string;
       quantity: number;
-      category_id: string;
+      subcategory_id: string;
       updated_at: Date;
       is_public: boolean;
       user: {
