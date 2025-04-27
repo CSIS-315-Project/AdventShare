@@ -108,19 +108,18 @@ export async function getItem(itemId: string): Promise<Item | null> {
 
   // Fetch category and subcategory names
   let categoryName = "Uncategorized";
-  let subcategoryName = "";
+  let subData;
 
   if (item.subcategory_id) {
     // First fetch the subcategory
     const { data: subcategoryData } = await supabase
       .from("subcategories")
-      .select("name, category_id")
+      .select("name, category_id, id")
       .eq("id", item.subcategory_id)
       .single();
 
     if (subcategoryData) {
-      subcategoryName = subcategoryData.name;
-
+      subData = subcategoryData;
       // Then fetch the category using the category_id from the subcategory
       if (subcategoryData.category_id) {
         const { data: categoryData } = await supabase
@@ -174,7 +173,7 @@ export async function getItem(itemId: string): Promise<Item | null> {
     postedDate: item.created_at,
     status: item.status || "Available",
     category: categoryName,
-    subcategory: subcategoryName,
+    subcategory: subData?.id,
     images: images || [],
     school: {
       name: organizationName || "Unknown Organization",
@@ -182,10 +181,9 @@ export async function getItem(itemId: string): Promise<Item | null> {
       contactEmail: item.contact_email || "no-reply@example.com",
     },
     user_name: userName || item.user_id,
-    condition: undefined,
+    condition: item.condition,
+    estimatedValue: item.value || undefined,
   };
-
-  console.log(formattedItem);
 
   // Validate the data with Zod schema
   return ItemSchema.parse(formattedItem);

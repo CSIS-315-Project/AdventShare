@@ -1,3 +1,4 @@
+import { ItemStatusSchema, SchoolSchema } from "@/types/item";
 import { z } from "zod";
 
 export const ItemSchema = z.object({
@@ -10,13 +11,16 @@ export const ItemSchema = z.object({
 });
 
 export const ItemSchemaEdit = z.object({
-  name: z.string().optional(),
+  name: z.string(),
   description: z.string().optional(),
-  subcategory: z.string().optional(),
-  public: z.boolean().optional(),
-  condition: z.string().optional(),
+  category: z.string().optional(),
+  subcategory:  z.string().optional(),
+  images: z.array(z.string().nullable()).optional(),
   quantity: z.number().int().positive().optional(),
-  value: z.number().nonnegative().optional(),
+  availableQuantity: z.number().int().min(0).optional(),
+  estimatedValue: z.number().nonnegative().optional(),
+  isPublic: z.boolean().optional(),
+  condition: z.string().optional(),
 });
 
 export type Item = z.infer<typeof ItemSchema>;

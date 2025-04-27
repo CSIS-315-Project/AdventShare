@@ -6,9 +6,9 @@ import Search from "@/components/search";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
-import { getOrganizationClaims } from "@/features/dashboard/organizations/server/db/claims";
-import { ClaimsTable } from "@/features/dashboard/organizations/components/table/claims/content";
-import ClaimsTableSkeleton from "@/features/dashboard/organizations/components/table/claims/skeleton";
+import { getClaims } from "@/features/posts/server/db/claims";
+import { ClaimsTable } from "@/features/posts/components/table/claims/content";
+import ClaimsTableSkeleton from "@/features/posts/components/table/claims/skeleton";
 
 export default async function ClaimsPage({
   params,
@@ -24,8 +24,8 @@ export default async function ClaimsPage({
   const currentPage = Math.max(1, Number((await searchParams)?.page) || 1);
   const LIMIT = 10;
 
-  const claims = await getOrganizationClaims({
-	organizationId: (await params).id,
+  const claims = await getClaims({
+	postId: (await params).id,
 	query,
 	limit: LIMIT,
 	offset: (currentPage - 1) * LIMIT,

@@ -19,6 +19,21 @@ import { ItemEdit, ItemSchemaEdit } from "@/features/posts/schemas/item";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import {
   Form,
   FormControl,
   FormField,
@@ -34,12 +49,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -49,6 +64,17 @@ import {
 } from "@/components/dropzone";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+
+const CONDITIONS = [
+  "New",
+  "Like New",
+  "Excellent",
+  "Barely Used",
+  "Good",
+  "Used",
+  "Fair",
+  "Poor",
+];
 
 export default function ItemClient({
   item,
@@ -70,10 +96,10 @@ export default function ItemClient({
       name: item.name,
       description: item.description,
       subcategory: item.subcategory,
-      public: item.public,
+      isPublic: item.public,
       condition: item.condition,
       quantity: item.quantity,
-      value: item.estimatedValue,
+      estimatedValue: item.estimatedValue,
     },
   });
 
@@ -85,14 +111,22 @@ export default function ItemClient({
   });
 
   function onError(error: any) {
-    toast.error(error);
+    toast("You encountered the following error:", {
+      description: (
+        <pre className="mt-2 w-[340px] rounded-md p-4">
+          <code className="">{JSON.stringify(error, null, 2)}</code>
+        </pre>
+      ),
+    });
     console.log(error);
   }
 
   async function onSubmit(data: ItemEdit) {
     try {
       setIsSaving(true);
-      await props.onUpload();
+      if (data.images && data.images.length > 0) {
+        await props.onUpload();
+      }
       toast.promise(action(data), {
         loading: "Updating post...",
         success: "Post updated successfully!",
@@ -111,42 +145,73 @@ export default function ItemClient({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, onError)}
-        className="space-y-4 my-2"
+        className="space-y-4 my-2 max-w-5xl place-self-center"
       >
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_1.2fr] gap-6">
-          <div className="flex items-center justify-center p-8 bg-gray-50 rounded-lg">
-            <div className="relative w-full max-w-[400px] aspect-square">
-              <div className="w-[500px]">
-                <Dropzone {...props}>
-                  <DropzoneEmptyState />
-                  <DropzoneContent />
-                </Dropzone>
+        <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            <div className="flex items-center justify-center p-8 bg-gray-50 rounded-lg">
+              <div className="relative w-full max-w-[400px] aspect-square">
+                <div className="w-full max-w-[400px]">
+                  {item.images.length > 0 && (
+                    <Carousel>
+                      <CarouselContent>
+                        {item.images.map((image) => (
+                          <CarouselItem>
+                            <Image
+                              src={image}
+                              alt={item.name}
+                              width={500}
+                              height={500}
+                            />
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious />
+                      <CarouselNext />
+                    </Carousel>
+                  )}
+                  <Dropzone className="max-w-[400px] w-full" {...props}>
+                    <DropzoneEmptyState />
+                    <DropzoneContent />
+                  </Dropzone>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      className="text-2xl font-bold border-none p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder="Item name"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <div className="flex justify-between gap-4 w-full items-center text-sm text-gray-500">
+                <p className="flex flex-row gap-2 items-center">
+                  <Clock className="w-4 h-4" />
+                  <span>
+                    Posted {new Date(item.postedDate).toLocaleDateString()}
+                  </span>
+                </p>
+                <p className="flex flex-row gap-2 items-center">
+                  <Building2 className="w-4 h-4" />
+                  {item.school.name}
+                </p>
+              </div>
 
-            <div className="flex items-center gap-3">
               <FormField
                 control={form.control}
-                name="public"
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        className="text-2xl font-bold focus-visible:ring-0 focus-visible:ring-offset-0"
+                        placeholder="Item name"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="isPublic"
                 render={({ field }) => (
                   <FormItem className="flex-shrink-0">
                     <div className="border-input has-data-[state=checked]:border-primary/50 relative flex w-full items-start gap-2 rounded-md border p-4 shadow-xs outline-none">
@@ -168,136 +233,140 @@ export default function ItemClient({
                 )}
               />
 
-              <div className="flex items-center text-sm text-gray-500">
-                <Clock className="w-4 h-4 mr-1" />
-                <span>
-                  Posted {new Date(item.postedDate).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-
-            <FormField
-              control={form.control}
-              name="subcategory"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-gray-500" />
+              <FormField
+                control={form.control}
+                name="subcategory"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col gap-1">
+                    <FormLabel>Category</FormLabel>
                     <FormControl>
-                    <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-[200px] justify-between",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value
-                        ? subcategories.find(
-                            (sub) => sub.id === field.value
-                          )?.name
-                        : "Select language"}
-                      <ChevronsUpDown className="opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0">
-                  <Command>
-                    <CommandInput
-                      placeholder="Search framework..."
-                      className="h-9"
-                    />
-                    <CommandList>
-                      <CommandEmpty>No framework found.</CommandEmpty>
-                      <CommandGroup>
-                        {subcategories.map((sub) => (
-                          <CommandItem
-                            value={sub.name}
-                            key={sub.id}
-                            onSelect={() => {
-                              form.setValue("subcategory", sub.id)
-                            }}
-                          >
-                            {sub.name}
-                            <Check
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
                               className={cn(
-                                "ml-auto",
-                                sub.id === field.value
-                                  ? "opacity-100"
-                                  : "opacity-0"
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
                               )}
+                            >
+                              {field.value
+                                ? subcategories.find(
+                                    (sub) => sub.id === field.value
+                                  )?.name
+                                : "Select category"}
+                              <ChevronsUpDown className="opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[200px] p-0">
+                          <Command>
+                            <CommandInput
+                              placeholder="Search category..."
+                              className="h-9"
                             />
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                            <CommandList>
+                              <CommandEmpty>No category found.</CommandEmpty>
+                              <CommandGroup>
+                                {subcategories.map((sub) => (
+                                  <CommandItem
+                                    value={sub.name}
+                                    key={sub.id}
+                                    onSelect={() => {
+                                      form.setValue("subcategory", sub.id);
+                                    }}
+                                  >
+                                    {sub.name}
+                                    <Check
+                                      className={cn(
+                                        "ml-auto",
+                                        sub.id === field.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </FormControl>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="condition"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Condition</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select the condition of the item" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CONDITIONS.map((condition) => (
+                          <SelectItem value={condition} key={condition}>
+                            {condition}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="estimatedValue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estimated Value Per Unit</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        className="h-7 text-sm border-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                        placeholder="$0.00"
+                        type="text"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
-              name="condition"
+              name="description"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="md:col-span-2">
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input
+                    <Textarea
                       {...field}
-                      className="h-7 text-sm border-none p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder="Condition"
+                      rows={4}
+                      placeholder="Enter item description"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <div className="pt-4 border-t">
-              <h3 className="text-base font-medium mb-2">Posted by</h3>
-
-              <p className="flex flex-row gap-2 items-center">
-                <Building2 className="w-4 h-4 mr-1" />
-                {item.school.name}
-              </p>
-            </div>
-
-            <Card>
-              <CardContent className="p-4">
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          {...field}
-                          rows={4}
-                          placeholder="Enter item description"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
           </div>
         </div>
-
         <div className="flex justify-end gap-3">
-          <Button variant="outline" type="button">
-            Cancel
-          </Button>
           <Button type="submit" disabled={isSaving}>
             {isSaving ? "Saving..." : "Save Changes"}
           </Button>
