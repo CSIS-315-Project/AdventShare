@@ -26,7 +26,7 @@ export const ItemSchema = z.object({
   school: SchoolSchema,
   quantity: z.number().int().positive().optional(),
   availableQuantity: z.number().int().min(0).optional(),
-  estimatedValue: z.number().nonnegative().optional(),
+  value: z.number().nonnegative().optional(),
 });
 
 export const SimilarItemSchema = z.object({

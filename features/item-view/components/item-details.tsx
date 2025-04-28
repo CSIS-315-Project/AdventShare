@@ -51,11 +51,11 @@ export default function ItemDetails({ item }: ItemDetailsProps) {
         )}
 
         {/* Display estimated value if available */}
-        {item.estimatedValue !== undefined && (
+        {item.value !== undefined && (
           <div className="flex items-center gap-2">
             <DollarSign className="h-4 w-4 text-gray-500" />
             <span className="text-sm text-gray-700">
-              Estimated Value: {formatCurrency(item.estimatedValue)}
+              Estimated Value: {formatCurrency(item.value)}
             </span>
           </div>
         )}

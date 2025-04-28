@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatCurrency } from "@/features/item-view/utils/format-utils";
 
 // components/ItemCard.tsx
 
@@ -6,6 +7,7 @@ type ItemCardProps = {
   id: string; // Add an id prop
   imageUrl?: string;
   title: string;
+  value?: number;
   postedTime: string;
   createdBy: string;
 };
@@ -13,6 +15,7 @@ type ItemCardProps = {
 export default function ItemCard({
   id,
   title,
+  value,
   imageUrl,
   createdBy,
   postedTime,
@@ -24,17 +27,31 @@ export default function ItemCard({
 
   return (
     <Link href={`/items/${id}`}>
-      <div className="border p-4 rounded shadow hover:shadow-lg hover:cursor-pointer transition">
+      <div className="border rounded shadow hover:shadow-lg hover:cursor-pointer transition">
         {image ? (
-          <img src={image} alt={title} className="w-full h-40 object-cover" />
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-60 object-cover rounded-t"
+          />
         ) : (
           <div className="h-40 bg-gray-200 flex items-center justify-center">
             No Image Available
           </div>
         )}
-        <h3 className="font-medium overflow-hidden">{title}</h3>
-        <p className="text-gray-600 text-sm overflow-hidden">{createdBy}</p>
-        <p className="text-gray-600">{formatedPostedTime}</p>
+        <div className="px-4 pb-4">
+          <h3 className="font-medium text-lg overflow-hidden pt-1">{title}</h3>
+          {/* Display estimated value if available */}
+          {value !== undefined && (
+            <div className="flex items-center">
+              <span className="text-sm text-gray-600">
+                Estimated Value: {formatCurrency(value)}
+              </span>
+            </div>
+          )}
+          <p className="text-gray-600 text-sm overflow-hidden">{createdBy}</p>
+          <p className="text-gray-600 text-sm">{formatedPostedTime}</p>
+        </div>
       </div>
     </Link>
   );

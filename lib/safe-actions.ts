@@ -116,3 +116,22 @@ export const authClient = actionClient.use(async ({ next }) => {
     },
   });
 });
+
+export const authClientwOrg = actionClient.use(
+  async ({ next, bindArgsClientInputs }) => {
+    const { userId, sessionClaims } = await auth();
+    if (!userId) {
+      throw new Error("You must be logged in to perform this action.");
+    }
+
+    const organizationId = bindArgsClientInputs[0] as string;
+
+    return next({
+      ctx: {
+        userId,
+        organizationId,
+        metadata: sessionClaims?.metadata,
+      },
+    });
+  }
+);
