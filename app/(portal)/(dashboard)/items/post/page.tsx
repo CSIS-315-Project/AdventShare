@@ -11,9 +11,12 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { ItemSchemaEdit } from '@/features/posts/schemas/item'
-
+// make ssr page to get category and subcategory names
 const supabase = createClient()
 
+// make createitempage a pure client function
+// so it can get category and subcategory names from the database
+// and map them to selection menu
 export default function CreateItemPage() {
   const router = useRouter()
 
@@ -87,11 +90,12 @@ export default function CreateItemPage() {
       .insert({
         name: valid.name,
         description: valid.description,
-        category: valid.category,
-        subcategory: valid.subcategory,
+        category_id: valid.category ?? null, // foreign key column
+        subcategory_id: valid.subcategory ?? null, // foreign key column
         quantity: valid.quantity ?? null,
         available_quantity: valid.availableQuantity ?? null,
         value: valid.estimatedValue ?? null,
+        images: valid.images,
         is_public: valid.isPublic,
         condition: valid.condition,
       })
@@ -99,12 +103,11 @@ export default function CreateItemPage() {
       .single()
 
     if (error || !data) {
-      console.error('Error creating item:', {error, data})
+      console.error('Error creating item:', error?.message, error?.details)
       toast.error('Failed to create item. Please try again.')
       return
     }
 
-    toast.success('Item created successfully!')
     setItemId(data.id)
     await onUpload(data.id)
 
@@ -114,6 +117,7 @@ export default function CreateItemPage() {
       return
     }
 
+    toast.success('Item created successfully!')
     router.push('/')
   }
 
@@ -180,6 +184,7 @@ export default function CreateItemPage() {
               onChange={(e) =>
                 setQuantity(e.target.value === '' ? '' : Number(e.target.value))
               }
+              onWheel={(e) => e.currentTarget.blur()}
               className="w-full rounded px-3 py-2 border border-gray-300"
               required
             />
@@ -194,6 +199,7 @@ export default function CreateItemPage() {
               onChange={(e) =>
                 setAvailableQuantity(e.target.value === '' ? '' : Number(e.target.value))
               }
+              onWheel={(e) => e.currentTarget.blur()}
               className="w-full rounded px-3 py-2 border border-gray-300"
               required
             />
@@ -208,6 +214,7 @@ export default function CreateItemPage() {
               onChange={(e) =>
                 setEstimatedValue(e.target.value === '' ? '' : Number(e.target.value))
               }
+              onWheel={(e) => e.currentTarget.blur()}
               className="w-full rounded px-3 py-2 border border-gray-300"
               required
             />
