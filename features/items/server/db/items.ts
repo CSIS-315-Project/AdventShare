@@ -6,24 +6,40 @@ import { clerkClient } from "@clerk/nextjs/server";
 // Create a Supabase client instance for server-side operations
 const supabase = await createClerkSupabaseClientSsr();
 
-// Fetch Latest Items
-export async function getItems(searchQuery: string = "") {
+// Fetch Latest Items with Pagination
+export async function getItems(
+  searchQuery: string = "",
+  limit: number = 10,
+  offset: number = 0,
+  userId?: string
+) {
+  // Get total count for pagination
+  const { count } = await supabase
+    .from("items")
+    .select("*", { count: "exact", head: true })
+    .eq("is_public", true)
+    .ilike("name", `%${searchQuery}%`)
+    .neq("user_id", userId);
+
+  // Fetch paginated items
   const { data: items, error } = await supabase
     .from("items")
     .select("*")
     .eq("is_public", true)
     .ilike("name", `%${searchQuery}%`)
-    .order("created_at", { ascending: false });
+    .neq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (error) {
     console.error("Error fetching items:", error.message);
-    return [];
+    return { data: [], totalCount: 0 };
   }
 
   const auth = await clerkClient();
 
   const data = await Promise.all(
-    items.map(async (item) => {
+    (items || []).map(async (item) => {
       let userName;
       let organizationName;
 
@@ -83,9 +99,6 @@ export async function getItems(searchQuery: string = "") {
         }
       }
 
-      // Fetch item's category id based on subcategory id
-      
-
       return {
         ...item,
         user_name: userName || item.user_id,
@@ -95,5 +108,8 @@ export async function getItems(searchQuery: string = "") {
     })
   );
 
-  return data;
+  return {
+    data,
+    totalCount: count || 0,
+  };
 }

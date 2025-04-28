@@ -12,18 +12,11 @@ import { Separator } from "@/components/ui/separator";
 
 interface ItemViewClientProps {
   item: Item;
-  similarItems: SimilarItem[];
 }
 
-export default function ItemViewClient({
-  item,
-  similarItems,
-}: ItemViewClientProps) {
+export default function ItemViewClient({ item }: ItemViewClientProps) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      {/* Add Sonner Toaster component */}
-      <Toaster position="top-right" />
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Image Gallery */}
         <div className="lg:col-span-2">

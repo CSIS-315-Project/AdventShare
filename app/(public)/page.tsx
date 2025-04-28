@@ -16,7 +16,7 @@ export default async function Page() {
   const user = await auth();
   if (user?.userId) {
     const [fetchedNewestItems, fetchedMyItems] = await Promise.all([
-      getNewestItems(),
+      getNewestItems(user.userId),
       getMyItems(user.userId),
     ]);
     newestItems.push(...fetchedNewestItems);
@@ -25,7 +25,7 @@ export default async function Page() {
 
   return (
     <main className="min-h-screen flex flex-col">
-      <div className="flex-1 p-4">
+      <div className="flex-1 ">
         <SignedOut>
           <div className="space-y-6">
             <Hero />
@@ -33,7 +33,7 @@ export default async function Page() {
           </div>
         </SignedOut>
         <SignedIn>
-          <div className="space-y-8">
+          <div className="">
             <ListingsGrid
               title="Newest Goods"
               items={newestItems}

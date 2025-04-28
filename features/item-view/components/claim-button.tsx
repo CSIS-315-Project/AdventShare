@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { claimItem } from "../server/actions/claim-item";
 import type { ItemStatus, Item } from "@/types/item";
 import { useUser } from "@clerk/nextjs";
+import { useOrganization } from "@clerk/nextjs";
 
 
 interface ClaimButtonProps {
@@ -23,34 +24,32 @@ export default function ClaimButton({ item, initialStatus }: ClaimButtonProps) {
   const maxQuantity = item.availableQuantity || item.quantity || 1;
   const showQuantitySelector =
     (item.quantity || 0) > 1 || (item.availableQuantity || 0) > 1;
-  
-  const { user } = useUser();
-  // console.log("User:", user);
-  const userId = user?.id;
+
+  const action = claimItem;
+
+  const { organization } = useOrganization();
+  const organizationId = organization?.id;
 
   const handleClaimItem = async () => {
     if (status !== "Available") return;
 
     setIsLoading(true);
     try {
-      const response = await claimItem(
-        item.id,
-        userId || "",
-        claimQuantity,
-        item.school.id
+      toast.promise(
+        action({
+          item_id: item.id,
+          organization_id: organizationId || "",
+          quantity: claimQuantity,
+          status: "",
+          user_id: "",
+        }),
+        {
+          success: "Claim request submitted successfully!",
+          error: (err) => {
+            return `Error: ${err}`;
+          },
+        }
       );
-      console.log("Claim response:", response);
-
-      if (response.success) {
-        setStatus("Pending Approval");
-        toast.success("Claim Request Submitted", {
-          description: `The school has been notified of your interest in ${
-            claimQuantity > 1 ? `${claimQuantity} items` : "this item"
-          }.`,
-        });
-      } else {
-        throw new Error(response.message);
-      }
     } catch (error) {
       toast.error("Error", {
         description:
