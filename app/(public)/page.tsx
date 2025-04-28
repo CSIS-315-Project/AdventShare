@@ -43,7 +43,7 @@ export default async function Page() {
             <ListingsGrid
               title="My Postings"
               items={myItems}
-              link="/postings"
+              link="/posts"
               linkText="View all postings"
             />
           </div>

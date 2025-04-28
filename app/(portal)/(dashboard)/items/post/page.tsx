@@ -205,7 +205,11 @@ export default function CreateListingPage() {
             name="quantity"
             render={({ field }) => (
               <FormItem>
+
+                //<FormLabel>Estimated Price</FormLabel>
+
                 <FormLabel>Quantity</FormLabel>
+
                 <FormControl>
                   <Input type="number" placeholder="0" {...field} />
                 </FormControl>

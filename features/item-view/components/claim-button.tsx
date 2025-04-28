@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { claimItem } from "../server/actions/claim-item";
-import type { ItemStatus, Item } from "../types";
+import type { ItemStatus, Item } from "@/types/item";
 import { useUser } from "@clerk/nextjs";
 
 

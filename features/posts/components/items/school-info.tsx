@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { School as SchoolType } from "@/types/item";
+import type { School as SchoolType } from "../types";
 
 interface SchoolInfoProps {
   school: SchoolType;

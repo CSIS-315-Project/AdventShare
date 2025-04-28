@@ -1,8 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { ClaimResponseSchema, type ClaimResponse } from "../../types";
-import { createClerkSupabaseClientSsr } from "@/lib/supabase/client";
+import { ClaimResponseSchema, type ClaimResponse } from "@/types/item";
+import { createClerkSupabaseClientSsr } from "@/lib/supabase/ssr/client";
 
 // Input validation schema
 const ClaimItemInputSchema = z.object({

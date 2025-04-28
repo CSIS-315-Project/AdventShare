@@ -1,10 +1,9 @@
-import Navbar from "@/components/Navbar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full">
-      <Navbar />
+    <SidebarProvider className="w-full">
       {children}
-    </div>
+    </SidebarProvider>
   );
 }

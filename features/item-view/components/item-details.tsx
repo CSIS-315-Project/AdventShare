@@ -1,8 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Clock, Tag, DollarSign, Package } from "lucide-react";
-import type { Item } from "../types";
-import { getStatusColor } from "../utils/status-utils";
-import { formatCurrency } from "../utils/format-utils";
+
+import type { Item } from "@/types/item";
+import { getStatusColor } from "@/lib/status";
+import { formatCurrency } from "@/lib/format";
 
 interface ItemDetailsProps {
   item: Item;
