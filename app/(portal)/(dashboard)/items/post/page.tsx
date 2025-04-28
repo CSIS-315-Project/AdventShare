@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -11,13 +9,15 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { ItemSchemaEdit } from '@/features/posts/schemas/item'
+import { get } from 'http'
+import { getCategories } from '@/lib/server/db/get-categories'
 // make ssr page to get category and subcategory names
 const supabase = createClient()
 
 // make createitempage a pure client function
 // so it can get category and subcategory names from the database
 // and map them to selection menu
-export default function CreateItemPage() {
+export default async function CreateItemPage() {
   const router = useRouter()
 
   const [name, setName] = useState('')
@@ -30,6 +30,15 @@ export default function CreateItemPage() {
   const [isPublic, setIsPublic] = useState(true)
   const [condition, setCondition] = useState('')
   const [itemId, setItemId] = useState<string>('')
+
+  const categories = await getCategories()
+  const categoryOptions = categories.map((category) => (
+    <option key={category.id} value={category.id}>
+      {category.name}
+    </option>
+  ))
+
+
 
   const {
     files,
@@ -155,9 +164,7 @@ export default function CreateItemPage() {
               required
             >
               <option value="">Select category</option>
-              <option value="books">Books</option>
-              <option value="electronics">Electronics</option>
-              <option value="furniture">Furniture</option>
+              {categoryOptions}
             </select>
           </div>
           <div>
