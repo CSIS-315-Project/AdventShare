@@ -1,31 +1,40 @@
-//just an example, no real functionality
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select";
-import { 
+import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { Checkbox } from "@/components/ui/checkbox";
 import ImageUpload from "@/components/image-upload";
+
+import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
+import { Clock, Tag, Building2, ChevronsUpDown, Check } from "lucide-react";
+
+import { toast } from "sonner";
+import { updateItem } from "@/features/posts/server/actions/item";
+import { Item } from "@/types/item";
+import { ItemEdit, ItemSchemaEdit } from "@/features/posts/schemas/item";
 
 // Form validation schema
 const formSchema = z.object({
@@ -33,10 +42,12 @@ const formSchema = z.object({
   description: z.string().min(10, { message: "Description must be at least 10 characters" }),
   category: z.string().min(1, { message: "Please select a category" }),
   condition: z.string().min(1, { message: "Please select condition" }),
-  price: z.string().min(1, { message: "Please enter a price" }),
+  quantity: z.string().min(1, { message: "Please enter a quantity" }),
+  estimated_value: z.string().min(1, { message: "Please enter the estimated value" }),
   images: z.array(z.string()).min(1, { message: "At least one image is required" }),
   location: z.string().min(1, { message: "Please enter your location" }),
   contactMethod: z.string().min(1, { message: "Please select a contact method" }),
+  is_public: z.boolean(),
 });
 
 export default function CreateListingPage() {
@@ -50,25 +61,44 @@ export default function CreateListingPage() {
       description: "",
       category: "",
       condition: "",
-      price: "",
+      quantity: "",
+      estimated_value: "",
       images: [],
       location: "",
       contactMethod: "email",
+      is_public: true,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsSubmitting(true);
-      
-      // API call to create listing would go here
-      console.log("Form submitted:", values);
-      
-      // Redirect to listing page or catalog
-      router.push("/catalog");
-      
-    } catch (error) {
-      console.error("Error creating listing:", error);
+
+      const res = await fetch("/api/items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: values.title,
+          description: values.description,
+          quantity: Number(values.quantity),
+          subcategory_id: values.category,
+          condition: values.condition,
+          is_public: values.is_public,
+          organization_id: null,
+          value: Number(values.estimated_value),
+        }),
+      });
+
+      if (res.ok) {
+        toast.success("Listing created successfully!");
+        router.push("/");
+      } else {
+        const err = await res.json();
+        toast.error(err.error || err.message || "Failed to create listing");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to create listing");
     } finally {
       setIsSubmitting(false);
     }
@@ -172,12 +202,26 @@ export default function CreateListingPage() {
           
           <FormField
             control={form.control}
-            name="price"
+            name="quantity"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Price</FormLabel>
+                <FormLabel>Quantity</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="0.00" {...field} />
+                  <Input type="number" placeholder="0" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="estimated_value"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estimated Value</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="$0" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -196,7 +240,7 @@ export default function CreateListingPage() {
                   />
                 </FormControl>
                 <FormDescription>
-                  Upload images of your item (max 5)
+                  Upload images of your item
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -239,6 +283,23 @@ export default function CreateListingPage() {
                   </SelectContent>
                 </Select>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="is_public"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(checked)}
+                  />
+                </FormControl>
+                <FormLabel className="mb-0">Public Listing</FormLabel>
+                <FormDescription>Check to make this item visible to everyone.</FormDescription>
               </FormItem>
             )}
           />
