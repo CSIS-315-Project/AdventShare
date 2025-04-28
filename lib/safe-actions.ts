@@ -3,7 +3,7 @@ import {
   createSafeActionClient,
   DEFAULT_SERVER_ERROR_MESSAGE,
 } from "next-safe-action";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { z } from "zod";
 
 import { Staff } from "@/types/staff";
@@ -16,12 +16,21 @@ export const actionClient = createSafeActionClient({
 });
 
 export const organizationAdminMiddleware = createMiddleware<{}>().define(
-  async ({ next, bindArgsClientInputs, ctx, metadata }) => {
+  async ({ next, bindArgsClientInputs, ctx }) => {
     if (!ctx) {
       throw new Error("Unauthorized");
     }
 
+    // May be a slug.
     const organizationId = bindArgsClientInputs[0] as string;
+
+    const client = await clerkClient();
+    const organization = await client.organizations.getOrganization({
+      organizationId,
+    });
+    if (!organization) {
+      throw new Error("Organization not found");
+    }
 
     const { userId, sessionClaims } = await auth();
     if (!userId) {
@@ -29,7 +38,7 @@ export const organizationAdminMiddleware = createMiddleware<{}>().define(
     }
 
     const data = await fetch(
-      `https://api.clerk.com/v1/organizations/${organizationId}/memberships?limit=${1}&query=${userId}`,
+      `https://api.clerk.com/v1/organizations/${organization.id}/memberships?limit=${1}&user_id=${userId}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
@@ -38,7 +47,8 @@ export const organizationAdminMiddleware = createMiddleware<{}>().define(
     );
 
     if (!data.ok) {
-      throw new Error("You are not a member of this organization.");
+      console.log(data)
+      throw new Error("Error");
     }
 
     const json = (await data.json()) as { data: Staff[]; total_count: number };
@@ -47,7 +57,7 @@ export const organizationAdminMiddleware = createMiddleware<{}>().define(
       throw new Error("You are not a member of this organization.");
     }
 
-    if (json.data[0].role !== "admin") {
+    if (json.data[0].role !== "org:admin") {
       throw new Error("You are not an admin of this organization.");
     }
 
@@ -79,10 +89,6 @@ export const adminClient = actionClient.use(async ({ next }) => {
 });
 
 export const organizationAdminClient = createSafeActionClient({
-  defineMetadataSchema: () =>
-    z.object({
-      permissionRequirement: z.union([z.string(), z.array(z.string())]),
-    }),
   handleServerError: (e) => {
     console.error(e);
     throw new Error(e.message);

@@ -106,6 +106,7 @@ export default function ItemClient({
   const props = useSupabaseUpload({
     bucketName: "item-images",
     allowedMimeTypes: ["image/*"],
+    path: `${item.id}/`,
     maxFiles: 5,
     maxFileSize: 1000 * 1000 * 10, // 10MB,
   });
@@ -134,6 +135,7 @@ export default function ItemClient({
           return `Error: ${err}`;
         },
       });
+      await props.onUpload();
     } catch (error) {
       toast.error("Failed to update item.");
     } finally {

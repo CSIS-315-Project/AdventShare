@@ -16,6 +16,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
+import { toast } from "sonner";
+import { remove } from "../../../server/actions/staff";
 
 interface Member {
   id: string;
@@ -28,7 +30,17 @@ interface Member {
   joinedAt: string;
 }
 
-export function MembersTable({ members }: { members: Member[] }) {
+export function MembersTable({ organizationId, members }: { organizationId: string, members: Member[] }) {
+
+  const removeUser = async (userId: string) => {
+    const action = remove.bind(null, organizationId, userId);
+    toast.promise(action, {
+      loading: "Removing member...",
+      success: "Member removed",
+      error: "Failed to remove member",
+    })
+  }
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -74,7 +86,7 @@ export function MembersTable({ members }: { members: Member[] }) {
                         Copy member ID
                       </DropdownMenuItem>
                       <DropdownMenuItem>Change role</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem onClick={() => removeUser(member.id)} className="text-destructive">
                         Remove member
                       </DropdownMenuItem>
                     </DropdownMenuContent>

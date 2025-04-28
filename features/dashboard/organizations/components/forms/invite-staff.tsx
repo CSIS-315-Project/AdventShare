@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
-import { invite } from "@/features/dashboard/organizations/server/actions/invite";
+import { invite } from "@/features/dashboard/organizations/server/actions/staff";
 
 export function InviteStaffDialog({
   organizationId,

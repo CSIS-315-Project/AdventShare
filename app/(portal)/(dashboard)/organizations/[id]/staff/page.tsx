@@ -58,9 +58,11 @@ export default async function OrganizationPage({
 
           <Suspense fallback={<MembersTableSkeleton />}>
             <MembersTable
+              organizationId={organizationId}
               members={staff.data.map((obj) => {
                 return {
-                  id: obj.id,
+                  id: obj.public_user_data.user_id,
+                  memId: obj.id,
                   email: obj.public_user_data?.identifier,
                   firstName: obj.public_user_data?.first_name,
                   lastName: obj.public_user_data?.last_name,
