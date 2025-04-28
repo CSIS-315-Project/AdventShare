@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 // import { ClaimResponseSchema, type ClaimResponse } from "../../types";
-import { createClerkSupabaseClientSsr } from "@/lib/supabase/client";
+import { createClerkSupabaseClientSsr } from "@/lib/supabase/ssr/client";
 import { authClient } from "@/lib/safe-actions";
 
 // Initialize Supabase client
