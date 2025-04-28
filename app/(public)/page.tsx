@@ -29,7 +29,9 @@ export default async function Page() {
         <SignedOut>
           <div className="space-y-6">
             <Hero />
-            <Features />
+            <div className="px-4 mb-4">
+              <Features />
+            </div>
           </div>
         </SignedOut>
         <SignedIn>

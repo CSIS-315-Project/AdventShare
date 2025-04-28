@@ -24,7 +24,10 @@ export default function Features() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {features.map((feature, index) => (
-        <div key={index} className={`p-6 ${feature.bgColor} rounded-lg`}>
+        <div
+          key={index}
+          className={`p-6 ${feature.bgColor} rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300`}
+        >
           <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
           <p>{feature.description}</p>
         </div>

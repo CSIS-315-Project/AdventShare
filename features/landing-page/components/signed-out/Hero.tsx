@@ -2,11 +2,11 @@
 export default function Hero() {
   return (
     <div
-      className="flex flex-col items-center justify-center text-center py-24 rounded-lg"
+      className="flex flex-col items-center justify-center text-center py-24 shadow-sm transition-shadow duration-300 hover:shadow-lg"
       style={{
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundColor: "rgba(255, 255, 215, 0.9)", // Fallback color
+        backgroundColor: "rgb(233, 244, 245)", // Fallback color
       }}
     >
       <h1 className="text-4xl font-bold text-white">Welcome to AdventShare!</h1>
@@ -18,7 +18,7 @@ export default function Hero() {
       </p>
       <a
         href="/onboarding"
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:cursor-pointer"
+        className="mt-4 px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-600 hover:cursor-pointer"
       >
         Get Started
       </a>
