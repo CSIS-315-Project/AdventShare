@@ -38,6 +38,7 @@ export const updateClaimStatus = authClient
       throw new Error("User not found.");
     }
 
+    // Get base url
     const itemUrl = `http://localhost:3000/items/${updatedItem.items.id}`;
     const message = `
 	  <div style="max-width: 600px; background-color: #ffffff; padding: 40px; margin: 0 auto; border-radius: 8px;">
@@ -55,7 +56,9 @@ export const updateClaimStatus = authClient
 
     resend.emails.send({
       from: "onboarding@resend.dev",
-      to: user.primaryEmailAddress?.emailAddress ?? "",
+      to:
+        user.primaryEmailAddress?.emailAddress ??
+        user.emailAddresses[0].emailAddress,
       subject: `Claim ${status}`,
       html: message,
     });
