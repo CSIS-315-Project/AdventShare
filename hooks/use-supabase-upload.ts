@@ -110,55 +110,55 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     multiple: maxFiles !== 1,
   })
 
-  const onUpload = useCallback(async () => {
-    setLoading(true)
+  const onUpload = useCallback(
+    async (overrideFolder?: string) => {
+      setLoading(true)
+      const targetFolder = overrideFolder ?? path ?? ''
+      const filesWithErrors = errors.map((x) => x.name)
+      const filesToUpload =
+        filesWithErrors.length > 0
+          ? [
+              ...files.filter((f) => filesWithErrors.includes(f.name)),
+              ...files.filter((f) => !successes.includes(f.name)),
+            ]
+          : files
 
-    // [Joshen] This is to support handling partial successes
-    // If any files didn't upload for any reason, hitting "Upload" again will only upload the files that had errors
-    const filesWithErrors = errors.map((x) => x.name)
-    const filesToUpload =
-      filesWithErrors.length > 0
-        ? [
-            ...files.filter((f) => filesWithErrors.includes(f.name)),
-            ...files.filter((f) => !successes.includes(f.name)),
-          ]
-        : files
+      const responses = await Promise.all(
+        filesToUpload.map(async (file) => {
+          const fullPath = targetFolder
+            ? `${targetFolder}/${file.name}`
+            : file.name
+          const { error } = await supabase.storage
+            .from(bucketName)
+            .upload(fullPath, file, {
+              cacheControl: cacheControl.toString(),
+              upsert,
+            })
+          return { name: file.name, message: error?.message }
+        })
+      )
 
-    const responses = await Promise.all(
-      filesToUpload.map(async (file) => {
-        const { error } = await supabase.storage
-          .from(bucketName)
-          .upload(!!path ? `${path}/${file.name}` : file.name, file, {
-            cacheControl: cacheControl.toString(),
-            upsert,
-          })
-        if (error) {
-          return { name: file.name, message: error.message }
-        } else {
-          return { name: file.name, message: undefined }
-        }
-      })
-    )
+      const responseErrors = responses
+        .filter((x) => x.message !== undefined)
+        .map((x) => ({ name: x.name, message: x.message as string }))
+      setErrors(responseErrors)
 
-    const responseErrors = responses.filter((x) => x.message !== undefined)
-    // if there were errors previously, this function tried to upload the files again so we should clear/overwrite the existing errors.
-    setErrors(responseErrors)
+      const responseSuccesses = responses.filter((x) => x.message === undefined)
+      const newSuccesses = Array.from(
+        new Set([...successes, ...responseSuccesses.map((x) => x.name)])
+      )
+      setSuccesses(newSuccesses)
 
-    const responseSuccesses = responses.filter((x) => x.message === undefined)
-    const newSuccesses = Array.from(
-      new Set([...successes, ...responseSuccesses.map((x) => x.name)])
-    )
-    setSuccesses(newSuccesses)
-
-    setLoading(false)
-  }, [files, path, bucketName, errors, successes])
+      setLoading(false)
+    },
+    [files, path, bucketName, errors, successes, cacheControl, upsert]
+  )
 
   useEffect(() => {
     if (files.length === 0) {
       setErrors([])
     }
 
-    // If the number of files doesn't exceed the maxFiles parameter, remove the error 'Too many files' from each file
     if (files.length <= maxFiles) {
       let changed = false
       const newFiles = files.map((file) => {

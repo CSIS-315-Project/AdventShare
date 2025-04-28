@@ -163,7 +163,7 @@ const DropzoneContent = ({ uploadButton = false, className }: { uploadButton?: b
         <div className="mt-2">
           <Button
             variant="outline"
-            onClick={onUpload}
+            onClick={() => onUpload()}
             disabled={files.some((file) => file.errors.length !== 0) || loading}
           >
             {loading ? (

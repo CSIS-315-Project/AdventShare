@@ -1,330 +1,299 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { X, Upload } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { useSupabaseUpload } from '@/hooks/use-supabase-upload'
+import { Dropzone } from '@/components/dropzone'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Button } from '@/components/ui/button'
+import { ItemSchemaEdit } from '@/features/posts/schemas/item'
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormDescription,
-} from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
-import ImageUpload from "@/components/image-upload";
+const supabase = createClient()
 
-import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
-import { Clock, Tag, Building2, ChevronsUpDown, Check } from "lucide-react";
+export default function CreateItemPage() {
+  const router = useRouter()
 
-import { toast } from "sonner";
-import { updateItem } from "@/features/posts/server/actions/item";
-import { Item } from "@/types/item";
-import { ItemEdit, ItemSchemaEdit } from "@/features/posts/schemas/item";
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [category, setCategory] = useState('')
+  const [subcategory, setSubcategory] = useState('')
+  const [quantity, setQuantity] = useState<number | ''>('')
+  const [availableQuantity, setAvailableQuantity] = useState<number | ''>('')
+  const [estimatedValue, setEstimatedValue] = useState<number | ''>('')
+  const [isPublic, setIsPublic] = useState(true)
+  const [condition, setCondition] = useState('')
+  const [itemId, setItemId] = useState<string>('')
 
-// Form validation schema
-const formSchema = z.object({
-  title: z.string().min(3, { message: "Title must be at least 3 characters" }),
-  description: z.string().min(10, { message: "Description must be at least 10 characters" }),
-  category: z.string().min(1, { message: "Please select a category" }),
-  condition: z.string().min(1, { message: "Please select condition" }),
-  quantity: z.string().min(1, { message: "Please enter a quantity" }),
-  estimated_value: z.string().min(1, { message: "Please enter the estimated value" }),
-  images: z.array(z.string()).min(1, { message: "At least one image is required" }),
-  location: z.string().min(1, { message: "Please enter your location" }),
-  contactMethod: z.string().min(1, { message: "Please select a contact method" }),
-  is_public: z.boolean(),
-});
+  const {
+    files,
+    setFiles,
+    onUpload,
+    loading: uploadLoading,
+    errors: uploadErrors,
+    isSuccess,
+    ...dropzoneProps
+  } = useSupabaseUpload({
+    bucketName: 'item-images',
+    path: itemId,
+    allowedMimeTypes: ['image/*'],
+    maxFiles: 5,
+    maxFileSize: 5 * 1024 * 1024,
+    cacheControl: 3600,
+    upsert: false,
+  })
 
-export default function CreateListingPage() {
-  const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const removeFile = (index: number) => {
+    setFiles(files.filter((_, i) => i !== index))
+  }
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      category: "",
-      condition: "",
-      quantity: "",
-      estimated_value: "",
-      images: [],
-      location: "",
-      contactMethod: "email",
-      is_public: true,
-    },
-  });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      setIsSubmitting(true);
+    const parseResult = ItemSchemaEdit.safeParse({
+      name,
+      description,
+      category,
+      subcategory,
+      quantity: quantity === '' ? undefined : quantity,
+      availableQuantity: availableQuantity === '' ? undefined : availableQuantity,
+      estimatedValue: estimatedValue === '' ? undefined : estimatedValue,
+      isPublic,
+      condition,
+      images: files.map((f) => f.name),
+    })
 
-      const res = await fetch("/api/items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: values.title,
-          description: values.description,
-          quantity: Number(values.quantity),
-          subcategory_id: values.category,
-          condition: values.condition,
-          is_public: values.is_public,
-          organization_id: null,
-          value: Number(values.estimated_value),
-        }),
-      });
-
-      if (res.ok) {
-        toast.success("Listing created successfully!");
-        router.push("/");
-      } else {
-        const err = await res.json();
-        toast.error(err.error || err.message || "Failed to create listing");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to create listing");
-    } finally {
-      setIsSubmitting(false);
+    if (!parseResult.success) {
+      toast.error('Please fill out all required fields')
+      return
     }
+
+    const valid = parseResult.data
+
+    if (
+      valid.availableQuantity !== undefined &&
+      valid.quantity !== undefined &&
+      valid.availableQuantity > valid.quantity
+    ) {
+      toast.error('Available quantity cannot be greater than total quantity')
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('items')
+      .insert({
+        name: valid.name,
+        description: valid.description,
+        category: valid.category,
+        subcategory: valid.subcategory,
+        quantity: valid.quantity ?? null,
+        available_quantity: valid.availableQuantity ?? null,
+        value: valid.estimatedValue ?? null,
+        is_public: valid.isPublic,
+        condition: valid.condition,
+      })
+      .select('id')
+      .single()
+
+    if (error || !data) {
+      console.error('Error creating item:', {error, data})
+      toast.error('Failed to create item. Please try again.')
+      return
+    }
+
+    toast.success('Item created successfully!')
+    setItemId(data.id)
+    await onUpload(data.id)
+
+    if (uploadErrors.length > 0) {
+      console.error('Error uploading images:', uploadErrors)
+      toast.error('Failed to upload images. Please try again.')
+      return
+    }
+
+    router.push('/')
   }
 
   return (
-    <div className="container mx-auto py-8 max-w-3xl">
-      <h1 className="text-2xl font-bold mb-6">Create New Listing</h1>
-      
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter item title" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+    <div className="p-6 max-w-2xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Create New Item</h1>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block mb-1 text-sm font-medium">Name</label>
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full rounded px-3 py-2 border border-gray-300"
+            required
           />
-          
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Describe your item in detail" 
-                    rows={5}
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm font-medium">Description</label>
+          <Textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full rounded px-3 py-2 border border-gray-300"
+            required
           />
-          
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="electronics">Electronics</SelectItem>
-                      <SelectItem value="furniture">Furniture</SelectItem>
-                      <SelectItem value="clothing">Clothing</SelectItem>
-                      <SelectItem value="toys">Toys</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="condition"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Condition</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select condition" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="like-new">Like New</SelectItem>
-                      <SelectItem value="good">Good</SelectItem>
-                      <SelectItem value="fair">Fair</SelectItem>
-                      <SelectItem value="poor">Poor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block mb-1 text-sm font-medium">Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full rounded px-3 py-2 border border-gray-300"
+              required
+            >
+              <option value="">Select category</option>
+              <option value="books">Books</option>
+              <option value="electronics">Electronics</option>
+              <option value="furniture">Furniture</option>
+            </select>
+          </div>
+          <div>
+            <label className="block mb-1 text-sm font-medium">Subcategory</label>
+            <select
+              value={subcategory}
+              onChange={(e) => setSubcategory(e.target.value)}
+              className="w-full rounded px-3 py-2 border border-gray-300"
+              required
+            >
+              <option value="">Select subcategory</option>
+              <option value="test">Test</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block mb-1 text-sm font-medium">Quantity</label>
+            <Input
+              type="number"
+              min={0}
+              value={quantity}
+              onChange={(e) =>
+                setQuantity(e.target.value === '' ? '' : Number(e.target.value))
+              }
+              className="w-full rounded px-3 py-2 border border-gray-300"
+              required
             />
           </div>
-          
-          <FormField
-            control={form.control}
-            name="quantity"
-            render={({ field }) => (
-              <FormItem>
+          <div>
+            <label className="block mb-1 text-sm font-medium">Available</label>
+            <Input
+              type="number"
+              min={0}
+              max={quantity === '' ? undefined : quantity}
+              value={availableQuantity}
+              onChange={(e) =>
+                setAvailableQuantity(e.target.value === '' ? '' : Number(e.target.value))
+              }
+              className="w-full rounded px-3 py-2 border border-gray-300"
+              required
+            />
+          </div>
+          <div>
+            <label className="block mb-1 text-sm font-medium">Estimated Value ($)</label>
+            <Input
+              type="number"
+              step={0.01}
+              min={0}
+              value={estimatedValue}
+              onChange={(e) =>
+                setEstimatedValue(e.target.value === '' ? '' : Number(e.target.value))
+              }
+              className="w-full rounded px-3 py-2 border border-gray-300"
+              required
+            />
+          </div>
+        </div>
 
-                //<FormLabel>Estimated Price</FormLabel>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6">
+          <div className="flex items-center">
+            <input
+              id="isPublic"
+              type="checkbox"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="mr-2"
+            />
+            <label htmlFor="isPublic" className="text-sm">
+              Public
+            </label>
+          </div>
+          <div className="flex-1">
+            <label className="block mb-1 text-sm font-medium">Condition</label>
+            <select
+              value={condition}
+              onChange={(e) => setCondition(e.target.value)}
+              className="w-full rounded px-3 py-2 border border-gray-300"
+              required
+            >
+              <option value="">Select condition</option>
+              <option value="new">New</option>
+              <option value="like_new">Like New</option>
+              <option value="used_good">Used - Good</option>
+              <option value="used_fair">Used - Fair</option>
+              <option value="for_parts">For Parts</option>
+            </select>
+          </div>
+        </div>
 
-                <FormLabel>Quantity</FormLabel>
+        <div>
+          <label className="block mb-2 text-sm font-medium">Images</label>
+          <Dropzone
+            {...dropzoneProps}
+            files={files}
+            setFiles={setFiles}
+            isSuccess={isSuccess}
+            loading={uploadLoading}
+            errors={uploadErrors}
+            onUpload={onUpload}
+            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50 hover:border-blue-400 transition-colors cursor-pointer"
+          >
+            <Upload size={32} className="mx-auto text-gray-400" />
+            <p className="mt-2 text-sm text-gray-500">
+              Drag & drop images here
+              <br />
+              or <span className="text-blue-500 underline">click to select</span>
+            </p>
+          </Dropzone>
 
-                <FormControl>
-                  <Input type="number" placeholder="0" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="estimated_value"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Estimated Value</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="$0" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="images"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Images</FormLabel>
-                <FormControl>
-                  <ImageUpload 
-                  //put image upload component here
-                  />
-                </FormControl>
-                <FormDescription>
-                  Upload images of your item
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Location</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter your location" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="contactMethod"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Preferred Contact Method</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
+          {files.length > 0 && (
+            <div className="mt-4 flex gap-4 overflow-x-auto">
+              {files.map((file, idx) => (
+                <div
+                  key={`${file.name}-${idx}`}
+                  className="relative w-20 h-20 rounded overflow-hidden border"
                 >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select contact method" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="phone">Phone</SelectItem>
-                    <SelectItem value="message">In-app Message</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="is_public"
-            render={({ field }) => (
-              <FormItem className="flex items-center space-x-2">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={(checked) => field.onChange(checked)}
+                  <button
+                    type="button"
+                    onClick={() => removeFile(idx)}
+                    className="absolute top-1 right-1 z-10 bg-white/75 rounded-full p-1 hover:bg-white"
+                  >
+                    <X size={16} className="text-red-600" />
+                  </button>
+                  <img
+                    src={(file as any).preview}
+                    alt={file.name}
+                    className="object-cover w-full h-full"
                   />
-                </FormControl>
-                <FormLabel className="mb-0">Public Listing</FormLabel>
-                <FormDescription>Check to make this item visible to everyone.</FormDescription>
-              </FormItem>
-            )}
-          />
-          
-          <div className="flex justify-end space-x-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => router.back()}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Creating..." : "Create Listing"}
-            </Button>
-          </div>
-        </form>
-      </Form>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Button type="submit" className="w-full">
+          Create Item
+        </Button>
+      </form>
     </div>
-  );
+  )
 }
