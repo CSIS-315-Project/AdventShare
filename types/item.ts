@@ -17,6 +17,7 @@ export const ItemStatusSchema = z.enum([
 export const ItemSchema = z.object({
   id: z.string(),
   name: z.string(),
+  user_id: z.string(),
   description: z.string().optional(),
   category: z.string().optional(),
   subcategory: z.string().optional(),

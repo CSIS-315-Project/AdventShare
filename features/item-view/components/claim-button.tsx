@@ -39,6 +39,8 @@ export default function ClaimButton({ item, initialStatus }: ClaimButtonProps) {
         action({
           item_id: item.id,
           organization_id: organizationId || "",
+          item_name: item.name,
+          poster_id: item.user_id,
           quantity: claimQuantity,
           status: "",
           user_id: "",
@@ -101,12 +103,12 @@ export default function ClaimButton({ item, initialStatus }: ClaimButtonProps) {
         {isLoading
           ? "Processing..."
           : status === "Available"
-          ? showQuantitySelector
-            ? `Claim ${claimQuantity} ${claimQuantity === 1 ? "Item" : "Items"}`
-            : "Claim This Item"
-          : status === "Pending Approval"
-          ? "Request Pending"
-          : "Item Claimed"}
+            ? showQuantitySelector
+              ? `Claim ${claimQuantity} ${claimQuantity === 1 ? "Item" : "Items"}`
+              : "Claim This Item"
+            : status === "Pending Approval"
+              ? "Request Pending"
+              : "Item Claimed"}
       </Button>
     </div>
   );
