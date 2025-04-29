@@ -30,15 +30,23 @@ export default function ClaimButton({ item, initialStatus }: ClaimButtonProps) {
   const { organization } = useOrganization();
   const organizationId = organization?.id;
 
+  
   const handleClaimItem = async () => {
     if (status !== "Available") return;
 
+    if (!organizationId) {
+      toast.error("Error", {
+        description: "Organization ID is missing. Please ensure you are logged in and part of an organization.",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     try {
       toast.promise(
         action({
           item_id: item.id,
-          organization_id: organizationId || "",
+          organization_id: organizationId,
           item_name: item.name,
           poster_id: item.user_id,
           quantity: claimQuantity,
@@ -90,6 +98,7 @@ export default function ClaimButton({ item, initialStatus }: ClaimButtonProps) {
                 )
               )
             }
+            onFocus={e => e.target.select()}
           />
         </div>
       )}

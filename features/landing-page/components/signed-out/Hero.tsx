@@ -2,7 +2,7 @@
 export default function Hero() {
   return (
     <div
-      className="flex flex-col items-center justify-center text-center py-24 shadow-sm transition-shadow duration-300 hover:shadow-lg"
+      className="flex flex-col items-center justify-center text-center py-54 shadow-sm transition-shadow duration-300 hover:shadow-lg"
       style={{
         backgroundSize: "cover",
         backgroundPosition: "center",
