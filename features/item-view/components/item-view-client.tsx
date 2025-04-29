@@ -1,7 +1,6 @@
 "use client";
 
-import { Toaster } from "sonner";
-import type { Item, SimilarItem } from "../types";
+import type { Item } from "../types";
 
 import ImageGallery from "./image-gallery";
 import ItemDetails from "./item-details";
