@@ -43,7 +43,7 @@ export async function getNewestItems() {
           const foundOrganization = await auth.organizations.getOrganization({
             organizationId: item.organization_id,
           });
-          console.log("foundOrganization", foundOrganization);
+
           if (foundOrganization) {
             organizationName = foundOrganization.name;
           }
@@ -131,7 +131,7 @@ export async function getMyItems(userId: string) {
           const foundOrganization = await auth.organizations.getOrganization({
             organizationId: item.organization_id,
           });
-          console.log("foundOrganization", foundOrganization);
+          
           if (foundOrganization) {
             organizationName = foundOrganization.name;
           }

@@ -57,7 +57,7 @@ export const invite = organizationAdminClient
           </div>
         `;
 
-      resend.emails.send({
+      await resend.emails.send({
         from: "onboarding@resend.dev",
         to: email,
         subject: `Invitation to join ${organization.name} on AdventShare!`,
@@ -119,7 +119,7 @@ export const remove = organizationAdminClient
         </div>
       `;
 
-    resend.emails.send({
+    await resend.emails.send({
       from: "onboarding@resend.dev",
       to: user.emailAddresses[0].emailAddress,
       subject: `You have been removed from ${organization.name}`,

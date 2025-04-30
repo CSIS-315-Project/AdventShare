@@ -26,7 +26,7 @@ export default function Pagination({
 	};
 
   return (
-    <CardFooter className="flex flex-row gap-2 items-center justify-between border-t px-6 py-4">
+    <CardFooter className="flex flex-row gap-2 items-center justify-between border-t px-6 py-4 w-full">
       <div className="text-sm text-muted-foreground">
         Showing <strong>{page}</strong> of <strong>{total}</strong> pages
       </div>

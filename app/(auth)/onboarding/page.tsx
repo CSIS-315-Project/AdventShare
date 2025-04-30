@@ -1,12 +1,22 @@
-'use client'
+import OnboardingForm from "@/features/auth/components/forms/onboarding";
+import { getOrganizations } from "@/features/auth/server/db/organizations";
 
-import * as React from 'react'
-import OnboardingForm from '@/features/auth/components/Onboarding'
+export default async function OnboardingComponent({
+  searchParams,
+}: {
+  searchParams: Promise<{ search?: string }>;
+}) {
+  const searchQuery = (await searchParams)?.search;
 
-export default function OnboardingComponent() {
+  const schools = await getOrganizations({
+    query: searchQuery || "",
+    limit: 10,
+    offset: 0,
+  });
+
   return (
     <div>
-      <OnboardingForm />
+      <OnboardingForm organizations={schools} />
     </div>
-  )
+  );
 }

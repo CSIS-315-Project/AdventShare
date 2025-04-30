@@ -43,7 +43,7 @@ export async function getItems(searchQuery: string = "") {
           const foundOrganization = await auth.organizations.getOrganization({
             organizationId: item.organization_id,
           });
-          console.log("foundOrganization", foundOrganization);
+          
           if (foundOrganization) {
             organizationName = foundOrganization.name;
           }

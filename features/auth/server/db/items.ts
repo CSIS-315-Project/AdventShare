@@ -49,7 +49,22 @@ export async function getItems(searchQuery: string | null) {
     return [];
   }
 
-  return data || [];
+  if (data.length === 0) {
+    return [];
+  }
+
+  const items = await Promise.all(
+    data.map(async (item) => {
+      const itemData = await getItem(item.id);
+
+      return {
+        condition: item.condition,
+        ...itemData,
+      };
+    })
+  );
+
+  return items || [];
 }
 
 export async function getItem(itemId: string): Promise<Item | null> {
@@ -85,7 +100,9 @@ export async function getItem(itemId: string): Promise<Item | null> {
   let userName;
   let organizationName;
 
-  const foundUser = await authClient.users.getUser(item.user_id).catch(() => null);
+  const foundUser = await authClient.users
+    .getUser(item.user_id)
+    .catch(() => null);
   if (foundUser) {
     userName = `${foundUser.firstName || ""} ${
       foundUser.lastName || ""
@@ -181,7 +198,7 @@ export async function getItem(itemId: string): Promise<Item | null> {
       contactEmail: item.contact_email || "no-reply@example.com",
     },
     user_name: userName || item.user_id,
-    condition: item.condition,
+    condition: item.condition || "Unknown",
     estimatedValue: item.value || undefined,
   };
 

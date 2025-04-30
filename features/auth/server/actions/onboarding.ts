@@ -5,6 +5,7 @@ import { authClient } from "@/lib/safe-actions";
 import { clerkClient } from "@clerk/nextjs/server";
 
 import { formSchema } from "@/features/auth/schemas/onboarding";
+
 import resend from "@/lib/resend";
 
 export const completeOnboarding = authClient
@@ -40,7 +41,7 @@ export const completeOnboarding = authClient
             </div>
           `;
       
-        resend.emails.send({
+        await resend.emails.send({
           from: "onboarding@resend.dev",
           to: res.emailAddresses[0].emailAddress,
           subject: `Welcome to AdventShare, ${res.firstName || "New User"}!`,

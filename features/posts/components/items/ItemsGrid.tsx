@@ -1,16 +1,10 @@
 // components/Items/ItemsGrid.tsx
 import ItemCard from "./ItemCard";
+import { Item } from "@/types/item";
 
-interface ItemsGridProps {
-  items: Array<{
-    id: string;
-    name: string;
-    description: string;
-    image_url: string | null;
-  }>;
-}
-
-export default function ItemsGrid({ items }: ItemsGridProps) {
+export default function ItemsGrid({ items }: {
+  items: Item[]
+}) {
   if (items.length === 0) {
     return <p className="text-gray-600">No items found.</p>;
   }

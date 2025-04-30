@@ -54,7 +54,7 @@ export const updateClaimStatus = authClient
 	  </div> 
 	`;
 
-    resend.emails.send({
+    await resend.emails.send({
       from: "onboarding@resend.dev",
       to:
         user.primaryEmailAddress?.emailAddress ??

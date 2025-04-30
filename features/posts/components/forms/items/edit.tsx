@@ -7,12 +7,12 @@ import { z } from "zod";
 
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
 
-import { Clock, Tag, Building2, ChevronsUpDown, Check } from "lucide-react";
+import { Clock, Tag, Building2, ChevronsUpDown, Check, X } from "lucide-react";
 
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { updateItem } from "@/features/posts/server/actions/item";
+import { updateItem, deleteImage } from "@/features/posts/server/actions/item";
 import { Item } from "@/types/item";
 import { ItemEdit, ItemSchemaEdit } from "@/features/posts/schemas/item";
 
@@ -143,6 +143,23 @@ export default function ItemClient({
     }
   }
 
+  async function onDeleteImage(image: string) {
+    const deleteImageAction = deleteImage.bind(null, item.id, image);
+
+    toast.promise(deleteImageAction, {
+      loading: "Deleting image...",
+      success: "Image deleted successfully!",
+      error: (err) => {
+        return `Error: ${err}`;
+      },
+    });
+
+    // slice image out
+    const updatedImages = [...item.images];
+    updatedImages.splice(updatedImages.indexOf(image), 1);
+    form.setValue("images", updatedImages);
+  }
+
   return (
     <Form {...form}>
       <form
@@ -153,12 +170,19 @@ export default function ItemClient({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             <div className="flex items-center justify-center p-8 bg-gray-50 rounded-lg">
               <div className="relative w-full max-w-[400px] aspect-square">
-                <div className="w-full max-w-[400px]">
+                <div className="flex flex-col gap-4 w-full max-w-[400px]">
                   {item.images.length > 0 && (
                     <Carousel>
                       <CarouselContent>
-                        {item.images.map((image) => (
-                          <CarouselItem>
+                        {item.images.map((image, index) => (
+                          <CarouselItem key={index} className="relative">
+                            <Button
+                              type="button"
+                              onClick={() => onDeleteImage(image)}
+                              className="absolute top-2 right-2 z-10 size-10 bg-red-500/80 hover:bg-red-700/50 text-white rounded-full p-1"
+                            >
+                              <X className="size-5" />
+                            </Button>
                             <Image
                               src={image}
                               alt={item.name}

@@ -1,14 +1,10 @@
 // components/SearchResults.tsx
+import { Item } from "@/types/item";
 import ItemsGrid from "./items/ItemsGrid";
 
 interface SearchResultsProps {
   searchQuery: string | null;
-  items: Array<{
-    id: string;
-    name: string;
-    description: string;
-    image_url: string | null;
-  }>;
+  items: Item[];
 }
 
 export default function SearchResults({

@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.18.0",
+    "@clerk/nextjs": "^6.18.1",
     "@hookform/resolvers": "^5.0.1",
     "@radix-ui/react-alert-dialog": "^1.1.11",
     "@radix-ui/react-avatar": "^1.1.7",
@@ -34,6 +34,7 @@
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
+    "framer-motion": "^12.9.2",
     "lucide-react": "^0.488.0",
     "next": "^15.3.1",
     "next-safe-action": "^7.10.8",
@@ -59,7 +60,7 @@
     "eslint": "^9.25.1",
     "eslint-config-next": "15.3.0",
     "typescript": "^5.8.3",
-    "@types/bun": "^1.2.10"
+    "@types/bun": "^1.2.11"
   },
   "overrides": {
     "@radix-ui/react-dismissable-layer": "1.1.5"

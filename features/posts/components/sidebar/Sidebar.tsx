@@ -12,10 +12,9 @@ import { currentUser } from "@clerk/nextjs/server";
 import Image from "next/image";
 
 import { SidebarMain } from "@/features/posts/components/sidebar/SidebarMain";
-import { SidebarSecondary } from "@/features/posts/components/sidebar/SidebarSecondary";
 import { SidebarUser } from "@/features/posts/components/sidebar/SidebarUser";
 
-export async function PostSidebar({ postId }: { postId: string }) {
+export async function PostSidebar({ postId }: { postId: string | null }) {
   const user = await currentUser();
 
   if (!user) {
@@ -41,16 +40,22 @@ export async function PostSidebar({ postId }: { postId: string }) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarMain postId={postId} />
-      </SidebarContent>
+        <SidebarContent>
+          <SidebarMain postId={postId} />
+        </SidebarContent>
       <SidebarFooter>
-        <SidebarUser user={{
-          firstName: user.firstName || "Unknown",
-          imageUrl: user.imageUrl,
-          primaryEmailAddress: user.primaryEmailAddress ? user.primaryEmailAddress.emailAddress : "Unknown",
-          emailAddresses: user.emailAddresses ? [user.emailAddresses[0].emailAddress] : ["Unknown"],
-        }} />
+        <SidebarUser
+          user={{
+            firstName: user.firstName || "Unknown",
+            imageUrl: user.imageUrl,
+            primaryEmailAddress: user.primaryEmailAddress
+              ? user.primaryEmailAddress.emailAddress
+              : "Unknown",
+            emailAddresses: user.emailAddresses
+              ? [user.emailAddresses[0].emailAddress]
+              : ["Unknown"],
+          }}
+        />
       </SidebarFooter>
     </Sidebar>
   );

@@ -58,7 +58,7 @@ export default async function ClaimsPage({
 			  page={currentPage}
 			  offset={(currentPage - 1) * LIMIT}
 			  limit={LIMIT}
-			  total={Math.ceil(claims.totalCount / LIMIT)}
+			  total={Math.max(1, Math.ceil(claims.totalCount / LIMIT))}
 			/>
 		  </div>
 		</div>
