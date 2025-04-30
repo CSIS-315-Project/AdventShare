@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatCurrency } from "@/features/item-view/utils/format-utils";
+import { formatCurrency } from "@/lib/format";
 
 // components/ItemCard.tsx
 
