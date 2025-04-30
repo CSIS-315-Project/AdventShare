@@ -15,6 +15,7 @@ type ListingsGridProps = {
   items: z.infer<typeof itemSchema>[];
   link: string;
   linkText: string;
+  isMyPosting?: boolean; // Add this prop
 };
 
 export default function ListingsGrid({
@@ -22,6 +23,7 @@ export default function ListingsGrid({
   items,
   link,
   linkText,
+  isMyPosting,
 }: ListingsGridProps) {
   return (
     <div className="mt-6 p-6 bg-white rounded-lg shadow-b-md ">
@@ -49,6 +51,7 @@ export default function ListingsGrid({
                   postedTime={item.created_at as unknown as string}
                   createdBy={item.organization_name || ""}
                   imageUrl={item.image_url || undefined}
+                  isMyPosting={isMyPosting}
                 />
               </CarouselItem>
             ))}

@@ -41,12 +41,14 @@ export default async function Page() {
               items={newestItems}
               link="/items"
               linkText="View all items"
+              isMyPosting={false}
             />
             <ListingsGrid
               title="My Postings"
               items={myItems}
-              link="/postings"
+              link="/posts"
               linkText="View all postings"
+              isMyPosting={true}
             />
           </div>
         </SignedIn>
