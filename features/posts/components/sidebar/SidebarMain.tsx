@@ -56,11 +56,9 @@ export function SidebarMain({ postId }: { postId: string | null }) {
                     <span>{item.title}</span>
                   </span>
                 ) : (
-                  <a href={item.url}>
-                    <span>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </span>
+                  <a href={item.url} className="flex flex-row gap-2">
+                    <item.icon />
+                    <span>{item.title}</span>
                   </a>
                 )}
               </SidebarMenuButton>

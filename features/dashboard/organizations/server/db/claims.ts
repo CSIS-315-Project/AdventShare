@@ -2,31 +2,6 @@ import "server-only";
 import { supabase } from "@/lib/supabase/server";
 import { clerkClient } from "@clerk/nextjs/server";
 
-/*
-
-Claims have these fields in supabase:
-id: uuid
-item_id: uuid FK
-user_id: uuid FK
-created_at: timestamptz
-updated_at: timestamptz
-status: 'pending' | 'approved' | 'rejected'
-organization_id: text (clerk org id)
-
-Items have these fields in supabase:
-id: uuid
-name: varchar
-description: text
-quantity: number
-updated_at: timestamptz
-created_at: timestamptz
-user_id: uuid FK
-category_id: uuid FK
-is_public: boolean
-organization_id: text (clerk org id)
-
-*/
-
 export async function getOrganizationClaims({
   organizationId,
   query = "",
