@@ -1,16 +1,8 @@
-import "server-only";
+import { createBrowserClient } from "@supabase/ssr";
 
-import { auth } from "@clerk/nextjs/server";
-import { createClient } from "@supabase/supabase-js";
-
-export async function createClerkSupabaseClientSsr() {
-  return createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLIC_KEY!,
-    {
-      async accessToken() {
-        return (await auth()).getToken();
-      },
-    }
+export function createClient() {
+  return createBrowserClient(
+	process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 }

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createClerkSupabaseClientSsr } from "@/lib/supabase/client";
+import { createClerkSupabaseClientSsr } from "@/lib/supabase/ssr/client";
 import { clerkClient } from "@clerk/nextjs/server";
 
 // Create a Supabase client instance for server-side operations
@@ -43,7 +43,7 @@ export async function getItems(searchQuery: string = "") {
           const foundOrganization = await auth.organizations.getOrganization({
             organizationId: item.organization_id,
           });
-          console.log("foundOrganization", foundOrganization);
+          
           if (foundOrganization) {
             organizationName = foundOrganization.name;
           }

@@ -27,6 +27,9 @@ export const ItemSchema = z.object({
   quantity: z.number().int().positive().optional(),
   availableQuantity: z.number().int().min(0).optional(),
   estimatedValue: z.number().nonnegative().optional(),
+  public: z.boolean().optional(),
+  condition: z.string().optional(),
+  user_name: z.string().optional(),
 });
 
 export const SimilarItemSchema = z.object({
