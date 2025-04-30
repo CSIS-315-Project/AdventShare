@@ -10,6 +10,7 @@ export interface Category {
 }
 
 export interface CreateItemResult {
+  message?: string
   success: boolean
   itemId?: string
   error?: string

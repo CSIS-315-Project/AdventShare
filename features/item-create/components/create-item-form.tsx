@@ -1,11 +1,13 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 import { toast } from "sonner"
-import { X } from "lucide-react"
+import { X, ChevronsUpDown, Check } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -16,242 +18,409 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { createItem } from "../server/actions/create-item"
 import { ItemSchema } from "../schemas/item"
 import ImageDropzone from "./image-dropzone"
-import type { Category } from "../types"
+import { useSupabaseUpload } from "@/hooks/use-supabase-upload"
+import { createClerkSupabaseClientSsr } from "@/lib/supabase/ssr/client"
+import { Switch } from "@/components/ui/switch"
+import { cn } from "@/lib/utils"
+import { 
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import type { CreateItemResult } from "../types"
+
+// Supported item conditions, matching the existing patterns in the app
+const CONDITIONS = [
+  "New",
+  "Like New",
+  "Excellent",
+  "Barely Used",
+  "Good",
+  "Used",
+  "Fair",
+  "Poor",
+]
+
+// Form schema that matches the backend itemSchema requirements
+const createItemSchema = z.object({
+  name: z.string().min(3, { message: "Name must be at least 3 characters" }),
+  description: z.string().min(10, { message: "Description must be at least 10 characters" }),
+  subcategory_id: z.string().min(1, { message: "Please select a category" }),
+  condition: z.string().min(1, { message: "Please select a condition" }),
+  quantity: z.coerce.number().int().positive({ message: "Please enter a valid quantity" }),
+  value: z.coerce.number().nonnegative({ message: "Value must be zero or positive" }).optional(),
+  is_public: z.boolean(),
+  organization_id: z.string().optional()
+})
+
+type FormValues = z.infer<typeof createItemSchema>
 
 interface CreateItemFormProps {
-  categories: Category[]
+  categories: {
+    id: string
+    name: string
+    subcategories: {
+      id: string
+      name: string
+    }[]
+  }[]
+  organizations?: {
+    id: string
+    name: string
+  }[]
 }
 
-export default function CreateItemForm({ categories }: CreateItemFormProps) {
+export default function CreateItemForm({ categories, organizations }: CreateItemFormProps) {
   const router = useRouter()
-
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [category, setCategory] = useState("")
-  const [subcategory, setSubcategory] = useState("")
-  const [quantity, setQuantity] = useState<number | "">(1)
-  const [availableQuantity, setAvailableQuantity] = useState<number | "">(1)
-  const [estimatedValue, setEstimatedValue] = useState<number | "">(0)
-  const [isPublic, setIsPublic] = useState(true)
-  const [condition, setCondition] = useState("")
-  const [files, setFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [itemId, setItemId] = useState<string | null>(null)
 
-  // Get subcategories for the selected category
-  const selectedCategory = categories.find((c) => c.id === category)
-  const subcategories = selectedCategory?.subcategories || []
+  // Form setup
+  const form = useForm<FormValues>({
+    resolver: zodResolver(createItemSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      subcategory_id: "",
+      condition: "",
+      quantity: 1,
+      value: undefined,
+      is_public: true,
+      organization_id: organizations?.[0]?.id
+    }
+  })
 
-  const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index))
+  // Handle file uploads
+  const uploadProps = useSupabaseUpload({
+    bucketName: "item-images",
+    allowedMimeTypes: ["image/*"],
+    path: itemId || "temp", // This will be updated after item creation
+    maxFiles: 5,
+    maxFileSize: 1000 * 1000 * 10 // 10MB
+  })
+
+  // Update the path when itemId becomes available
+  useEffect(() => {
+    if (itemId) {
+      uploadProps.setFiles([]) // Reset files
+      // Set the correct path for uploads
+      const newProps = {
+        ...uploadProps,
+        path: `${itemId}/`
+      }
+      Object.assign(uploadProps, newProps)
+    }
+  }, [itemId])
+
+  function onError(error: any) {
+    toast.error("Form submission error", {
+      description: (
+        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{JSON.stringify(error, null, 2)}</code>
+        </pre>
+      ),
+    })
+    console.error(error)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
+  async function onSubmit(data: FormValues) {
     try {
-      // Validate form data
-      const parseResult = ItemSchema.safeParse({
-        name,
-        description,
-        category,
-        subcategory,
-        quantity: quantity === "" ? undefined : quantity,
-        availableQuantity: availableQuantity === "" ? undefined : availableQuantity,
-        estimatedValue: estimatedValue === "" ? undefined : estimatedValue,
-        isPublic,
-        condition,
-        images: files.map((f) => URL.createObjectURL(f)), // In a real app, we'd upload these to storage
-      })
-
-      if (!parseResult.success) {
-        const errorMessage = parseResult.error.issues.map((issue) => issue.message).join(", ")
-        toast.error(`Validation error: ${errorMessage}`)
+      setIsSubmitting(true)
+      
+      // Create the item in the database
+      const result = await createItem(data) as CreateItemResult
+      
+      if (!result.success || !result.itemId) {
+        toast.error(result.message || "Failed to create item")
         return
       }
-
-      const valid = parseResult.data
-
-      // Check if available quantity is valid
-      if (
-        valid.availableQuantity !== undefined &&
-        valid.quantity !== undefined &&
-        valid.availableQuantity > valid.quantity
-      ) {
-        toast.error("Available quantity cannot be greater than total quantity")
-        return
+      
+      // Store the item ID for image uploads
+      setItemId(result.itemId)
+      
+      // Upload images if there are any
+      if (uploadProps.files.length > 0) {
+        // Update the path to include the item ID
+        Object.assign(uploadProps, {
+          ...uploadProps,
+          path: `${result.itemId}/`
+        })
+        
+        // Upload the images
+        await uploadProps.onUpload()
+        
+        if (uploadProps.errors.length > 0) {
+          toast.warning("Some images failed to upload", {
+            description: "Your item was created, but not all images were uploaded successfully."
+          })
+        }
       }
-
-      // Create item (mock action)
-      const result = await createItem(valid)
-
-      if (result.success) {
-        toast.success("Item created successfully!")
-        router.push("/items/" + result.itemId)
-      } else {
-        toast.error(result.error || "Failed to create item")
-      }
+      
+      // Show success message
+      toast.success("Item created successfully!")
+      
+      // Redirect back to items page
+      setTimeout(() => {
+        router.push("/items")
+      }, 1500)
     } catch (error) {
       console.error("Error creating item:", error)
-      toast.error("An unexpected error occurred. Please try again.")
+      toast.error("Failed to create item")
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
-        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="w-full" required />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="w-full min-h-[120px]"
-          required
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="category">Category</Label>
-          <Select value={category} onValueChange={setCategory} required>
-            <SelectTrigger>
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="subcategory">Subcategory</Label>
-          <Select
-            value={subcategory}
-            onValueChange={setSubcategory}
-            disabled={!category || subcategories.length === 0}
-            required
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select subcategory" />
-            </SelectTrigger>
-            <SelectContent>
-              {subcategories.map((subcat) => (
-                <SelectItem key={subcat.id} value={subcat.id}>
-                  {subcat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="quantity">Quantity</Label>
-          <Input
-            id="quantity"
-            type="number"
-            min={1}
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value === "" ? "" : Number(e.target.value))}
-            className="w-full"
-            required
+    <div className="container mx-auto py-8 max-w-3xl">
+      <h1 className="text-2xl font-bold mb-6">Create New Item</h1>
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Item Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter item name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="availableQuantity">Available</Label>
-          <Input
-            id="availableQuantity"
-            type="number"
-            min={0}
-            max={quantity === "" ? undefined : quantity}
-            value={availableQuantity}
-            onChange={(e) => setAvailableQuantity(e.target.value === "" ? "" : Number(e.target.value))}
-            className="w-full"
-            required
+          
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Describe your item in detail" 
+                    rows={5}
+                    {...field} 
+                  />
+                </FormControl>
+                <FormDescription>
+                  Be specific about the item's features, age, and any notable details.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="estimatedValue">Estimated Value ($)</Label>
-          <Input
-            id="estimatedValue"
-            type="number"
-            step={0.01}
-            min={0}
-            value={estimatedValue}
-            onChange={(e) => setEstimatedValue(e.target.value === "" ? "" : Number(e.target.value))}
-            className="w-full"
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6">
-        <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-          <Checkbox id="isPublic" checked={isPublic} onCheckedChange={(checked) => setIsPublic(checked === true)} />
-          <Label htmlFor="isPublic" className="text-sm font-normal">
-            Make this item public
-          </Label>
-        </div>
-
-        <div className="flex-1 space-y-2">
-          <Label htmlFor="condition">Condition</Label>
-          <Select value={condition} onValueChange={setCondition} required>
-            <SelectTrigger>
-              <SelectValue placeholder="Select condition" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="new">New</SelectItem>
-              <SelectItem value="like_new">Like New</SelectItem>
-              <SelectItem value="used_good">Used - Good</SelectItem>
-              <SelectItem value="used_fair">Used - Fair</SelectItem>
-              <SelectItem value="for_parts">For Parts</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Images</Label>
-        <ImageDropzone files={files} setFiles={setFiles} />
-
-        {files.length > 0 && (
-          <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
-            {files.map((file, idx) => (
-              <div key={`${file.name}-${idx}`} className="relative w-20 h-20 rounded overflow-hidden border">
-                <button
-                  type="button"
-                  onClick={() => removeFile(idx)}
-                  className="absolute top-1 right-1 z-10 bg-white/75 rounded-full p-1 hover:bg-white"
-                >
-                  <X size={16} className="text-red-600" />
-                </button>
-                <img
-                  src={URL.createObjectURL(file) || "/placeholder.svg"}
-                  alt={file.name}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-            ))}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="subcategory_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <FormControl>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      value={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.flatMap(category => 
+                          category.subcategories.map(subcategory => (
+                            <SelectItem key={subcategory.id} value={subcategory.id}>
+                              {category.name} — {subcategory.name}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="condition"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Condition</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select condition" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {CONDITIONS.map((condition) => (
+                        <SelectItem key={condition} value={condition}>
+                          {condition}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-        )}
-      </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantity</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={1}
+                      {...field}
+                      onChange={e => field.onChange(parseInt(e.target.value))} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Creating..." : "Create Item"}
-      </Button>
-    </form>
+            <FormField
+              control={form.control}
+              name="value"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estimated Value (per unit)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      placeholder="$0.00"
+                      {...field}
+                      value={field.value || ""}
+                      onChange={e => {
+                        const value = e.target.value === "" ? undefined : parseFloat(e.target.value);
+                        field.onChange(value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormDescription>Optional</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="is_public"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Public Listing</FormLabel>
+                  <FormDescription>
+                    Make this item visible to all users
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+          
+          {organizations && organizations.length > 0 && (
+            <FormField
+              control={form.control}
+              name="organization_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Organization</FormLabel>
+                  <Select 
+                    onValueChange={field.onChange} 
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select organization" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {organizations.map((org) => (
+                        <SelectItem key={org.id} value={org.id}>
+                          {org.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          
+          <div className="space-y-2">
+            <FormLabel>Images</FormLabel>
+            <ImageDropzone 
+              {...uploadProps}
+              setFiles={(files: File[]) => {
+                const filesWithPreview = files.map(file => ({
+                  ...file,
+                  errors: []
+                })) as any;
+                uploadProps.setFiles(filesWithPreview);
+              }}
+            />
+            <FormDescription>
+              Upload up to 5 images to showcase your item. Max 10MB per image.
+            </FormDescription>
+          </div>
+          
+          <div className="flex justify-end gap-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => router.back()}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting || uploadProps.loading}>
+              {isSubmitting ? "Creating..." : "Create Item"}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   )
 }
+
+
