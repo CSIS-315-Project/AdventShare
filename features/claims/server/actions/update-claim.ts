@@ -5,7 +5,6 @@ import { ClaimResponseSchema, type ClaimResponse } from "@/types/item";
 import { createClerkSupabaseClientSsr } from "@/lib/supabase/ssr/client";
 import { authClient } from "@/lib/safe-actions";
 import { UpdateClaimInputSchema } from "../../types";
-import { getUserClaims } from "../db/get-user-claims";
 
 // Schema for updating a claim
 const updateClaimSchema = UpdateClaimInputSchema;
@@ -32,8 +31,6 @@ export const updateClaim = authClient
           console.error("Error updating claim:", error);
           throw new Error(`Database error: ${error.message}`);
         }
-
-        await getUserClaims();
 
         return ClaimResponseSchema.parse({
           success: true,

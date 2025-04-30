@@ -4,17 +4,15 @@ import { ClaimSchema, type Claim } from "../../types"
 import { createClerkSupabaseClientSsr } from "@/lib/supabase/ssr/client"
 import { clerkClient } from "@clerk/nextjs/server"
 
-export async function getUserClaims(): Promise<Claim[]> {
+export async function getUserClaims(userID: string): Promise<Claim[]> {
   const supabase = await createClerkSupabaseClientSsr()
   const auth = await clerkClient()
-
-  // Get the current user's ID
 
   // Fetch claims for the current user
   const { data: claims, error } = await supabase
     .from("claims")
     .select("*")
-    .eq("user_id", "user_2swtRra1DslZmTx9TpaL1GOmbCG")
+    .eq("user_id", userID )
     .order("created_at", { ascending: false })
 
   if (error) throw new Error(`Failed to fetch claims: ${error.message}`)

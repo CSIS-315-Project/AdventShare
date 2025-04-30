@@ -4,7 +4,6 @@ import { z } from "zod";
 import { ClaimResponseSchema, type ClaimResponse } from "@/types/item";
 import { createClerkSupabaseClientSsr } from "@/lib/supabase/ssr/client";
 import { authClient } from "@/lib/safe-actions";
-import { getUserClaims } from "../db/get-user-claims";
 
 // Schema for deleting a claim
 const deleteClaimSchema = z.object({
