@@ -40,7 +40,7 @@ export default function Navbar() {
             <nav className="hidden md:flex space-x-4">
               <NavLink href="/items/post">Post</NavLink>
               <NavLink href="/claims">Claims</NavLink>
-              <NavLink href="/Profile">Profile</NavLink>
+              <NavLink href="/posts">My Postings</NavLink>
             </nav>
           </SignedIn>
 
@@ -78,13 +78,13 @@ export default function Navbar() {
               </DropdownMenuItem>
               <SignedIn>
                 <DropdownMenuItem>
-                  <NavLink href="/post-item">Post</NavLink>
+                  <NavLink href="/items/post">Post</NavLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <NavLink href="/claims">Claims</NavLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <NavLink href="/Profile">Profile</NavLink>
+                  <NavLink href="/posts">My Postings</NavLink>
                 </DropdownMenuItem>
               </SignedIn>
             </DropdownMenuContent>
