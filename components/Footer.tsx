@@ -2,9 +2,9 @@ import React from "react";
 
 export default function Footer() {
   return (
-    <footer className="text-white py-6" style={{ backgroundColor: "#002c44" }}>
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-between items-center">
+    <footer className="text-white py-6 w-full" style={{ backgroundColor: "#002c44" }}>
+      <div className="w-full px-8">
+        <div className="flex flex-col md:flex-row justify-between items-center w-full">
           <div className="mb-4 md:mb-0">
             <p className="text-sm">© 2025 AdventShare. All rights reserved.</p>
           </div>

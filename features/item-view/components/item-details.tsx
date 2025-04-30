@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Clock, Tag, DollarSign, Package } from "lucide-react";
+import { Clock, Tag, DollarSign, Package, CheckCircle2 } from "lucide-react";
 
 import type { Item } from "@/types/item";
 import { getStatusColor } from "@/lib/status";
@@ -36,6 +36,19 @@ export default function ItemDetails({ item }: ItemDetailsProps) {
             {item.category} {item.subcategory && `› ${item.subcategory}`}
           </span>
         </div>
+
+            {/* Display condition if available */}
+            {item.condition && (
+        <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-gray-500" />
+            <span className="text-sm">
+              Condition:{" "}
+              <span className={`font-medium`}>
+                {item.condition}
+              </span>
+            </span>
+          </div>
+        )}
 
         {/* Display quantity details if available */}
         {item.quantity !== undefined && item.quantity > 1 && (

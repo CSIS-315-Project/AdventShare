@@ -20,7 +20,7 @@ export const ItemSchemaEdit = z.object({
   availableQuantity: z.number().int().min(0).optional(),
   estimatedValue: z.number().nonnegative().optional(),
   isPublic: z.boolean().optional(),
-  condition: z.string().optional(),
+  condition: z.string().optional().nullable(),
 });
 
 export type Item = z.infer<typeof ItemSchema>;
