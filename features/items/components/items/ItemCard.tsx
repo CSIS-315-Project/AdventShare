@@ -10,6 +10,7 @@ type ItemCardProps = {
   value?: number;
   postedTime: string;
   createdBy: string;
+  isMyPosting?: boolean; // Add this prop
 };
 
 export default function ItemCard({
@@ -19,14 +20,18 @@ export default function ItemCard({
   imageUrl,
   createdBy,
   postedTime,
+  isMyPosting, // Default to false
 }: ItemCardProps) {
   const defaultImageUrl = "/Logo2.png";
   const image = imageUrl || defaultImageUrl;
 
   const formatedPostedTime = new Date(postedTime).toLocaleDateString();
+  
+  // Conditionally set the link
+  const href = isMyPosting ? `/posts/${id}` : `/items/${id}`;
 
   return (
-    <Link href={`/items/${id}`}>
+    <Link href={href}>
       <div className="border rounded shadow hover:shadow-lg hover:cursor-pointer transition">
         {image ? (
           <img
