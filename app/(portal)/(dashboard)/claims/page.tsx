@@ -1,19 +1,22 @@
-import Footer from "@/components/Footer";
-import SearchResults from "@/features/posts/components/SearchResults";
-import { getClaims } from "@/features/auth/server/db/items";
+import { Suspense } from "react"
+import type { Metadata } from "next"
+import ClaimsList from "@/features/claims/components/claims-list"
+import ClaimsPageSkeleton from "@/features/claims/components/claims-page-skeleton"
 
-export default async function ItemsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ search?: string }>;
-}) {
-  const searchQuery = (await searchParams)?.search || null;
-  const items = await getClaims(searchQuery);
+export const metadata: Metadata = {
+  title: "My Claims - AdventShare",
+  description: "Manage your claimed items",
+}
 
+export default function ClaimsPage() {
   return (
-    <main className="min-h-screen">
-      <SearchResults searchQuery={searchQuery} items={items} />
-      <Footer />
-    </main>
-  );
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <h1 className="text-3xl font-bold mb-2">My Claims</h1>
+      <p className="text-muted-foreground mb-8">Manage your claimed items from schools in your area</p>
+
+      <Suspense fallback={<ClaimsPageSkeleton />}>
+        <ClaimsList />
+      </Suspense>
+    </div>
+  )
 }
