@@ -27,8 +27,15 @@ export const invite = organizationAdminClient
       const invite = await client.organizations.createOrganizationInvitation({
         organizationId: organization.id,
         emailAddress: email,
-        role: role,
+        role: `org:${role.toLowerCase()}`,
+      }).catch(err => {
+        console.log(err);
+        return null;
       });
+
+      if (!invite || !invite.url) {
+        throw new Error("Failed to create organization invitation or missing URL.");
+      }
 
       const users = await client.users.getUserList({ query: email, limit: 1 });
       if (users.totalCount === 0 || !users.data[0]) {
@@ -83,9 +90,6 @@ export const remove = organizationAdminClient
       throw new Error("Organization not found");
     }
 
-    console.log(organization.id);
-    console.log(userId);
-
     const deletedUser = await client.organizations.deleteOrganizationMembership(
       {
         organizationId: organization.id,
@@ -98,8 +102,6 @@ export const remove = organizationAdminClient
     if (!deletedUser) {
         throw new Error("User not found");
     }
-
-    console.log(deletedUser);
 
     const user = await client.users.getUser(userId);
 
