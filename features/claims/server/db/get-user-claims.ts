@@ -92,7 +92,7 @@ export async function getUserClaims(userID: string): Promise<Claim[]> {
         id: claim.id,
         item: formattedItem,
         status: claim.status,
-        quantity: claim.quantity,
+        quantity: claim.quantity || 1,
         claimDate: claim.created_at,
         notes: claim.notes,
         responseDate: claim.response_date,
