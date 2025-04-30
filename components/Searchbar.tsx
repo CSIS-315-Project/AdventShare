@@ -23,15 +23,15 @@ export default function Searchbar() {
 
   return (
     <form className="flex w-full" onSubmit={handleSearch}>
-      <select className="rounded-l-sm border border-r-0 border-gray-300 px-2 focus:outline-none bg-slate-200">
+      {/* <select className="rounded-l-sm border border-r-0 border-gray-300 px-2 focus:outline-none bg-slate-200">
         <option value="all">All</option>
         <option value="items">Items</option>
         <option value="users">Users</option>
-      </select>
+      </select> */}
       <Input
         type="search"
         placeholder="Search AdventShare..."
-        className="flex-grow rounded-r-none rounded-l-none border-r-0 bg-white text-black focus-visible:ring-0 focus-visible:ring-offset-0"
+        className="flex-grow rounded-r-none rounded-l-lg border-r-0 bg-white text-black focus-visible:ring-0 focus-visible:ring-offset-0"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />

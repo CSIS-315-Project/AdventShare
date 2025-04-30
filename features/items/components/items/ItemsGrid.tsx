@@ -20,6 +20,7 @@ export default function ItemsGrid({ items }: ItemsGridProps) {
           key={item.id}
           id={item.id}
           title={item.name}
+          value={item.value}
           postedTime={item.created_at as unknown as string}
           createdBy={item.organization_name || ""}
           imageUrl={item.image_url || undefined}

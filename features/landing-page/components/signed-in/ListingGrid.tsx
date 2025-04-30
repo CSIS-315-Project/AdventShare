@@ -1,5 +1,5 @@
 // components/ListingsGrid.tsx
-import ItemCard from "./ItemCard";
+import ItemCard from "@/features/items/components/items/ItemCard";
 import { itemSchema } from "@/schemas/items";
 import { z } from "zod";
 import {
@@ -15,6 +15,7 @@ type ListingsGridProps = {
   items: z.infer<typeof itemSchema>[];
   link: string;
   linkText: string;
+  isMyPosting?: boolean; // Add this prop
 };
 
 export default function ListingsGrid({
@@ -22,13 +23,14 @@ export default function ListingsGrid({
   items,
   link,
   linkText,
+  isMyPosting,
 }: ListingsGridProps) {
   return (
-    <div className="mt-6 p-6 bg-white rounded-lg shadow-b-md border-2">
+    <div className="mt-6 p-6 bg-white rounded-lg shadow-b-md ">
       <h2 className="text-2xl font-semibold mb-4">{title}</h2>
 
       {items.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">
+        <div className="text-center text-gray-500 py-24">
           No items to display
         </div>
       ) : (
@@ -40,14 +42,16 @@ export default function ListingsGrid({
             {items.map((item, index) => (
               <CarouselItem
                 key={index}
-                className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
+                className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 2xl:basis-1/5"
               >
                 <ItemCard
                   id={item.id}
                   title={item.name}
+                  value={item.value}
                   postedTime={item.created_at as unknown as string}
                   createdBy={item.organization_name || ""}
                   imageUrl={item.image_url || undefined}
+                  isMyPosting={isMyPosting}
                 />
               </CarouselItem>
             ))}
