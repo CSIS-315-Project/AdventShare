@@ -12,9 +12,27 @@ import { Separator } from "@/components/ui/separator";
 
 interface ItemViewClientProps {
   item: Item;
+  organization: {
+    readonly id: string;
+    readonly name: string;
+    readonly slug: string;
+    readonly imageUrl: string;
+    readonly hasImage: boolean;
+    readonly createdAt: number;
+    readonly updatedAt: number;
+    readonly publicMetadata: OrganizationPublicMetadata | null;
+    readonly privateMetadata: OrganizationPrivateMetadata;
+    readonly maxAllowedMemberships: number;
+    readonly adminDeleteEnabled: boolean;
+    readonly membersCount?: number;
+    readonly createdBy?: string;
+  };
 }
 
-export default function ItemViewClient({ item }: ItemViewClientProps) {
+export default function ItemViewClient({
+  item,
+  organization,
+}: ItemViewClientProps) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -33,7 +51,11 @@ export default function ItemViewClient({ item }: ItemViewClientProps) {
 
           <Separator />
 
-          <ClaimButton item={item} initialStatus={item.status} />
+          <ClaimButton
+            item={item}
+            initialStatus={item.status}
+            organization={organization}
+          />
         </div>
       </div>
 
