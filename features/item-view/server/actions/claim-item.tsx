@@ -3,84 +3,98 @@
 import { z } from "zod";
 import { ClaimResponseSchema, type ClaimResponse } from "@/types/item";
 import { createClerkSupabaseClientSsr } from "@/lib/supabase/ssr/client";
+import { authClient } from "@/lib/safe-actions";
+import resend from "@/lib/resend";
+import { clerkClient } from "@clerk/nextjs/server";
 
-// Input validation schema
-const ClaimItemInputSchema = z.object({
-  itemId: z.string().min(1, "Item ID is required"),
-});
+// Initialize Supabase client
+const supabase = await createClerkSupabaseClientSsr();
 
 const claimSchema = z.object({
   item_id: z.string(),
   user_id: z.string(),
-  organization_id: z.string().optional(),
+  organization_id: z.string(),
+  item_name: z.string().optional(),
+  poster_id: z.string(),
   status: z.string(),
   quantity: z.number().min(1, "Quantity must be at least 1").optional(),
 });
 
-/**
- * Server action to claim an item
- */
-export async function claimItem(
-  itemId: string,
-  userId: string,
-  quantity: number = 1,
-  organizationId?: string
-): Promise<ClaimResponse> {
-  try {
-    // Validate input
-    const validatedInput = ClaimItemInputSchema.parse({ itemId });
-    if (!validatedInput.itemId) {
-      throw new Error("Item ID is required");
+export const claimItem = authClient
+  .schema(claimSchema)
+  .action(
+    async ({
+      parsedInput: { item_id, organization_id, quantity, item_name, poster_id },
+      ctx: { userId },
+    }) => {
+      try {
+        const supabase = await createClerkSupabaseClientSsr();
+
+        // Insert claim into database
+        const { data, error } = await supabase
+          .from("claims")
+          .insert({
+            item_id,
+            user_id: userId,
+            organization_id,
+            status: "pending",
+            quantity: quantity || 1,
+          } as z.infer<typeof claimSchema>)
+          .select()
+          .single();
+
+        if (error) {
+          console.error("Error inserting claim:", error);
+          throw new Error(`Database error: ${error.message}`);
+        }
+
+        if (data) {
+          const auth = await clerkClient();
+          const user = await auth.users.getUser(userId).catch(() => null);
+
+          const poster = await auth.users.getUser(poster_id).catch(() => null);
+
+          if (!user) {
+            throw new Error("User not found.");
+          }
+
+          if (!poster) {
+            throw new Error("Poster not found.");
+          }
+
+          // const itemUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/items/${item_id}`;
+            const message = `
+            <div style="max-width: 600px; background-color: #ffffff; padding: 40px; margin: 0 auto; border-radius: 8px;">
+              <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">
+              Pending Claim Request for Your Item: ${item_name ?? "your item"}
+              </h1>
+              <p style="font-size: 16px; color: #6b7280; margin-bottom: 30px;">Hi ${user.firstName ?? "there"},</p>
+              <p style="font-size: 16px; margin-bottom: 10px;">
+              Someone has requested to claim <strong>${item_name ?? "your item"}</strong>. Please review and take action in your AdventShare dashboard.
+              </p>
+              <p style="font-size: 16px; margin-bottom: 10px;">
+              If you need more information, you can contact ${user.firstName} ${user.lastName} at <a href="mailto:${user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0].emailAddress}" style="color: #3b82f6;">${user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0].emailAddress}</a>.
+              </p>
+              <p>
+              Thank you for sharing on AdventShare!
+              </p>
+            </div>
+            `;
+
+          resend.emails.send({
+            from: "onboarding@resend.dev",
+            to:
+              poster.primaryEmailAddress?.emailAddress ??
+              poster.emailAddresses[0].emailAddress,
+            subject: `Claim Request Pending for ${item_name}`,
+            html: message,
+          });
+        }
+
+        return { message: "Claim submitted successfully!" };
+      } catch (err) {
+        console.log(err);
+        return { error: "There was an error creating claim." };
+      }
     }
-
-    // Create claim data based on schema
-    const claimData = claimSchema.parse({
-      item_id: itemId,
-      user_id: userId,
-      organization_id: organizationId,
-      status: "pending",
-      quantity: quantity,
-    });
-
-    console.log("Claim data:", claimData);
-
-    // Initialize Supabase client
-    const supabase = await createClerkSupabaseClientSsr();
-
-    // Insert claim into database
-    const { data, error } = await supabase
-      .from("claims")
-      .insert(claimData)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error inserting claim:", error);
-      throw new Error(`Database error: ${error.message}`);
-    }
-
-    // Return success response
-    return ClaimResponseSchema.parse({
-      success: true,
-      message: "Claim request submitted successfully",
-      data,
-    });
-  } catch (error) {
-    // Handle validation errors
-    if (error instanceof z.ZodError) {
-      return {
-        success: false,
-        message: `Validation error: ${error.errors
-          .map((e) => e.message)
-          .join(", ")}`,
-      };
-    }
-
-    // Handle other errors
-    console.error("Error claiming item:", error);
-    return {
-      success: false,
-      message: "Failed to submit claim request. Please try again later.",
-    };
-  }
-}
+  );

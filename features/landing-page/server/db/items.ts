@@ -7,13 +7,14 @@ import { clerkClient } from "@clerk/nextjs/server";
 const supabase = await createClerkSupabaseClientSsr();
 
 // Fetch Latest Items
-export async function getNewestItems() {
+export async function getNewestItems(userId: string) {
   const { data: items, error } = await supabase
     .from("items")
     .select("*")
     .eq("is_public", true)
+    .neq("user_id", userId) // Exclude current user
     .order("created_at", { ascending: false })
-    .limit(20); // Fetch latest 4 items
+    .limit(20);
 
   if (error) {
     console.error("Error fetching items:", error);
@@ -43,7 +44,6 @@ export async function getNewestItems() {
           const foundOrganization = await auth.organizations.getOrganization({
             organizationId: item.organization_id,
           });
-
           if (foundOrganization) {
             organizationName = foundOrganization.name;
           }
@@ -101,7 +101,7 @@ export async function getMyItems(userId: string) {
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
-    .limit(4);
+    .limit(20);
 
   if (error) {
     return [];
