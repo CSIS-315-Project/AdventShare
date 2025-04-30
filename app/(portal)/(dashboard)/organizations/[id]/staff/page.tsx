@@ -78,8 +78,6 @@ export default async function OrganizationPage({
           <div className="mt-5 flex w-full justify-center">
             <Pagination
               page={currentPage}
-              offset={(currentPage - 1) * LIMIT}
-              limit={LIMIT}
               total={Math.ceil(staff.totalCount / LIMIT)}
             />
           </div>

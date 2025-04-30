@@ -1,6 +1,6 @@
 import { getAdminStats } from "@/features/admin/overview/server/db/stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Building2, Package, FileText, FolderTree } from "lucide-react";
+import { Users, Building2, Package, FolderTree } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
   Table,

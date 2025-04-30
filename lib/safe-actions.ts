@@ -1,10 +1,8 @@
 import {
   createMiddleware,
   createSafeActionClient,
-  DEFAULT_SERVER_ERROR_MESSAGE,
 } from "next-safe-action";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { z } from "zod";
 
 import { Staff } from "@/types/staff";
 
@@ -15,7 +13,7 @@ export const actionClient = createSafeActionClient({
   },
 });
 
-export const organizationAdminMiddleware = createMiddleware<{}>().define(
+export const organizationAdminMiddleware = createMiddleware().define(
   async ({ next, bindArgsClientInputs, ctx }) => {
     if (!ctx) {
       throw new Error("Unauthorized");

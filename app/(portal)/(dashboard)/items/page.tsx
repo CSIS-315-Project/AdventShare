@@ -33,8 +33,6 @@ export default async function ItemsPage({
       <div className="mt-5 flex w-full justify-center">
         <Pagination
           page={currentPage}
-          offset={(currentPage - 1) * LIMIT}
-          limit={LIMIT}
           total={Math.ceil(totalCount / LIMIT)}
         />
       </div>

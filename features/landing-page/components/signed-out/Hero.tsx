@@ -6,7 +6,7 @@ export default function Hero() {
       style={{
         backgroundSize: "cover",
         backgroundPosition: "center",
-        backgroundColor: "rgb(233, 244, 245)", // Fallback color
+        backgroundColor: "rgb(218, 237, 237)", // Fallback color
       }}
     >
       <h1 className="text-4xl font-bold text-white">Welcome to AdventShare!</h1>
@@ -18,7 +18,7 @@ export default function Hero() {
       </p>
       <a
         href="/onboarding"
-        className="mt-4 px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-600 hover:cursor-pointer"
+        className="mt-4 px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600 hover:cursor-pointer"
       >
         Get Started
       </a>

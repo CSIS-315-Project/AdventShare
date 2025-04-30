@@ -29,7 +29,7 @@ export const ItemSchema = z.object({
   availableQuantity: z.number().int().min(0).optional(),
   estimatedValue: z.number().nonnegative().optional(),
   public: z.boolean().optional(),
-  condition: z.string().optional(),
+  condition: z.string().optional().nullable(),
   user_name: z.string().optional(),
 });
 

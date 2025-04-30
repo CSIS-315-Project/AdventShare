@@ -1,10 +1,7 @@
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Suspense } from "react";
 import Pagination from "@/components/pagination";
 import Search from "@/components/search";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 
 import { getClaims } from "@/features/posts/server/db/claims";
 import { ClaimsTable } from "@/features/posts/components/table/claims/content";
@@ -56,8 +53,6 @@ export default async function ClaimsPage({
 		  <div className="mt-5 flex w-full justify-center">
 			<Pagination
 			  page={currentPage}
-			  offset={(currentPage - 1) * LIMIT}
-			  limit={LIMIT}
 			  total={Math.max(1, Math.ceil(claims.totalCount / LIMIT))}
 			/>
 		  </div>

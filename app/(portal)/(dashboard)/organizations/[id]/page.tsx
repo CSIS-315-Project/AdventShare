@@ -1,10 +1,8 @@
 import { getOrganization } from "@/features/dashboard/organizations/server/db/organization";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, Calendar, Shield } from "lucide-react";
+import { Users, Calendar, Shield } from "lucide-react";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
 
 export default async function OrganizationPage({
   params,

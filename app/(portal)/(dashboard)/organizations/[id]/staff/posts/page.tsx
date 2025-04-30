@@ -1,12 +1,9 @@
 import { getOrganizationPosts } from "@/features/dashboard/organizations/server/db/posts";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PostsTable } from "@/features/dashboard/organizations/components/table/posts/content";
 import { Suspense } from "react";
 import Pagination from "@/components/pagination";
 import Search from "@/components/search";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import PostsTableSkeleton from "@/features/dashboard/organizations/components/table/posts/skeleton";
 import { getSubcategories } from "@/lib/supabase/db";
 
@@ -58,8 +55,6 @@ export default async function PostsPage({
           <div className="mt-5 flex w-full justify-center">
             <Pagination
               page={currentPage}
-              offset={(currentPage - 1) * LIMIT}
-              limit={LIMIT}
               total={Math.ceil(posts.totalCount / LIMIT)}
             />
           </div>
