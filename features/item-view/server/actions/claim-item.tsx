@@ -73,7 +73,7 @@ export const claimItem = authClient
               Someone has requested to claim <strong>${item_name ?? "your item"}</strong>. Please review and take action in your AdventShare dashboard.
               </p>
               <p style="font-size: 16px; margin-bottom: 10px;">
-              If you need more information, you can reply to this email to contact the requester directly.
+              If you need more information, you can contact ${user.firstName} ${user.lastName} at <a href="mailto:${user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0].emailAddress}" style="color: #3b82f6;">${user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0].emailAddress}</a>.
               </p>
               <p>
               Thank you for sharing on AdventShare!
@@ -82,16 +82,10 @@ export const claimItem = authClient
             `;
 
           resend.emails.send({
-            from:   
-              user.primaryEmailAddress?.emailAddress ??
-              user.emailAddresses[0].emailAddress,
+            from: "onboarding@resend.dev",
             to:
               poster.primaryEmailAddress?.emailAddress ??
               poster.emailAddresses[0].emailAddress,
-            cc: [
-              user.primaryEmailAddress?.emailAddress ??
-              user.emailAddresses[0].emailAddress,
-            ],
             subject: `Claim Request Pending for ${item_name}`,
             html: message,
           });
