@@ -1,3 +1,5 @@
 import { Resend } from 'resend';
 
-export default new Resend(process.env.RESEND!);
+const resendInstance = new Resend(process.env.RESEND!);
+
+export default resendInstance;

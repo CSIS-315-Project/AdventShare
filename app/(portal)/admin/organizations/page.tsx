@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { CreateOrganization } from "@/features/admin/organizations/components/forms/create";
 import Search from "@/components/search";
 
-import { Suspense } from 'react';
+import { Suspense } from "react";
 import Pagination from "@/components/pagination";
 import { getOrganizations } from "@/features/admin/organizations/server/db/organizations";
 import Skeleton from "@/features/admin/organizations/components/table/skeleton";
@@ -16,7 +16,7 @@ export default async function AdministrationPage(props: {
   }>;
 }) {
   const searchParams = await props.searchParams;
-  const query = searchParams?.query || '';
+  const query = searchParams?.query || "";
   const currentPage = Number(searchParams?.page) || 1;
 
   const LIMIT = 10;
@@ -25,7 +25,7 @@ export default async function AdministrationPage(props: {
     query,
     limit: LIMIT,
     offset: (currentPage - 1) * LIMIT,
-  })
+  });
 
   return (
     <div className="container mx-auto py-8">
@@ -46,22 +46,24 @@ export default async function AdministrationPage(props: {
           <Search placeholder="Search orgs..." />
           <CreateOrganization />
         </div>
-        <Suspense
-          key={query + currentPage}
-          fallback={<Skeleton />}
-        >
-          <OrganizationsTable organizations={organizations.data.map((obj) => {
-            return {
-              id: obj.id,
-              name: obj.name,
-              createdAt: obj.createdAt,
-              phone: "123-456-7890",
-              address: "1234 Main St",
-            }
-          })} />
+        <Suspense key={query + currentPage} fallback={<Skeleton />}>
+          <OrganizationsTable
+            organizations={organizations.data.map((obj) => {
+              return {
+                id: obj.id,
+                name: obj.name,
+                createdAt: obj.createdAt,
+                phone: "123-456-7890",
+                address: "1234 Main St",
+              };
+            })}
+          />
         </Suspense>
         <div className="mt-5 flex w-full justify-center">
-          <Pagination page={currentPage} offset={currentPage * LIMIT} limit={LIMIT} total={Math.ceil(organizations.totalCount / LIMIT)} />
+          <Pagination
+            page={currentPage}
+            total={Math.ceil(organizations.totalCount / LIMIT)}
+          />
         </div>
       </div>
     </div>

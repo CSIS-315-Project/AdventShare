@@ -27,14 +27,7 @@ import {
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import ImageUpload from "@/components/image-upload";
-
-import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
-import { Clock, Tag, Building2, ChevronsUpDown, Check } from "lucide-react";
-
 import { toast } from "sonner";
-import { updateItem } from "@/features/posts/server/actions/item";
-import { Item } from "@/types/item";
-import { ItemEdit, ItemSchemaEdit } from "@/features/posts/schemas/item";
 
 // Form validation schema
 const formSchema = z.object({
