@@ -7,14 +7,10 @@ import { Button } from "@/components/ui/button";
 
 export default function Pagination({
   page,
-  offset,
   total,
-  limit,
 }: {
   page: number;
-  offset: number;
   total: number;
-  limit: number;
 }) {
   const pathname = usePathname();
 	const searchParams = useSearchParams();

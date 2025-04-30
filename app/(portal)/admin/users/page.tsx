@@ -77,8 +77,6 @@ export default async function UsersPage(props: {
         <div className="mt-5 flex w-full justify-center">
           <Pagination 
             page={currentPage} 
-            offset={(currentPage - 1) * LIMIT} 
-            limit={LIMIT} 
             total={Math.ceil(users.totalCount / LIMIT)}
           />
         </div>
