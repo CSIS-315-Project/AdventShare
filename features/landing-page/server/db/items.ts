@@ -44,7 +44,6 @@ export async function getNewestItems(userId: string) {
           const foundOrganization = await auth.organizations.getOrganization({
             organizationId: item.organization_id,
           });
-
           if (foundOrganization) {
             organizationName = foundOrganization.name;
           }
