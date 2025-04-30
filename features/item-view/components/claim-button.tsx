@@ -7,17 +7,33 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { claimItem } from "../server/actions/claim-item";
 import type { ItemStatus, Item } from "@/types/item";
-import { useUser } from "@clerk/nextjs";
-import { useOrganization } from "@clerk/nextjs";
-
 
 interface ClaimButtonProps {
   item: Item;
   initialStatus: ItemStatus;
+  organization: {
+    readonly id: string;
+    readonly name: string;
+    readonly slug: string;
+    readonly imageUrl: string;
+    readonly hasImage: boolean;
+    readonly createdAt: number;
+    readonly updatedAt: number;
+    readonly publicMetadata: OrganizationPublicMetadata | null;
+    readonly privateMetadata: OrganizationPrivateMetadata;
+    readonly maxAllowedMemberships: number;
+    readonly adminDeleteEnabled: boolean;
+    readonly membersCount?: number;
+    readonly createdBy?: string;
+  };
 }
 
-export default function ClaimButton({ item, initialStatus }: ClaimButtonProps) {
-  const [status, setStatus] = useState(initialStatus);
+export default function ClaimButton({
+  item,
+  initialStatus,
+  organization,
+}: ClaimButtonProps) {
+  const [status] = useState(initialStatus); // Removed unused setStatus
   const [isLoading, setIsLoading] = useState(false);
   const [claimQuantity, setClaimQuantity] = useState(1);
 
@@ -27,20 +43,19 @@ export default function ClaimButton({ item, initialStatus }: ClaimButtonProps) {
 
   const action = claimItem;
 
-  const { organization } = useOrganization();
-  const organizationId = organization?.id;
+  const organizationId = organization.id;
 
-  
   const handleClaimItem = async () => {
     if (status !== "Available") return;
 
     if (!organizationId) {
       toast.error("Error", {
-        description: "Organization ID is missing. Please ensure you are logged in and part of an organization.",
+        description:
+          "Organization ID is missing. Please ensure you are logged in and part of an organization.",
       });
       return;
     }
-    
+
     setIsLoading(true);
     try {
       toast.promise(
@@ -98,7 +113,7 @@ export default function ClaimButton({ item, initialStatus }: ClaimButtonProps) {
                 )
               )
             }
-            onFocus={e => e.target.select()}
+            onFocus={(e) => e.target.select()}
           />
         </div>
       )}
