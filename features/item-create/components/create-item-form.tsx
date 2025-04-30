@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2 } from "lucide-react";
+import { Check, ChevronsUpDown, ImageIcon, Loader2, UploadIcon, XIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,32 +28,66 @@ import {
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { useSupabaseUpload } from "@/hooks/use-supabase-upload";
-import { Dropzone, DropzoneContent, DropzoneEmptyState } from "@/components/dropzone";
-
 import { createItem } from "../server/actions/create-item";
 import { createItemSchema } from "../schemas/items";
-//import image
+import { cn } from "@/lib/utils";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
-const CONDITIONS = [
-  "New",
-  "Like New",
-  "Good",
-  "Used",
-  "Fair",
-  "Poor",
-];
+const CONDITIONS = ["New", "Like New", "Good", "Used", "Fair", "Poor"];
 
-const SUBCATEGORIES = [
-  "Electronics",
-  "Furniture",
-  "Other"
-];
+export type FileMetadata = {
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  id: string;
+};
 
-export default function CreateItemForm() {
+// Helper function to format bytes to human-readable format
+export const formatBytes = (bytes: number, decimals = 2): string => {
+  if (bytes === 0) return "0 Bytes";
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return (
+    Number.parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i]
+  );
+};
+
+export default function CreateItemForm({
+  subcategories
+}: {
+  subcategories: {
+    name: string;
+    id: string;
+  }[]
+}) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [tempItemId] = useState(`temp-${Date.now()}`); // Temporary ID for image organization
+  const [files, setFiles] = useState<FileMetadata[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const maxSizeMB = 5;
+  const acceptedTypes =
+    "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif";
 
   const form = useForm<z.infer<typeof createItemSchema>>({
     resolver: zodResolver(createItemSchema),
@@ -68,40 +102,62 @@ export default function CreateItemForm() {
     },
   });
 
-  // Use the upload hook with a temporary path that we can rename later
-  const uploadProps = useSupabaseUpload({
-    bucketName: "item-images",
-    allowedMimeTypes: ["image/*"],
-    path: `${item.id}/`,
-    maxFiles: 5,
-    maxFileSize: 1000 * 1000 * 10, // 10MB
-  });
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (e.currentTarget.contains(e.relatedTarget as Node)) {
+      return;
+    }
+
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+
+    // Set the files in the form
+    form.setValue("images", Array.from(e.dataTransfer.files), {
+      shouldValidate: true,
+    });
+  };
+
+  const clearFiles = () => {
+    setFiles([]);
+    form.reset();
+  };
+
+  const removeFile = (id: string) => {
+    setFiles((prevFiles) => prevFiles.filter((file) => file.id !== id));
+  };
 
   async function onSubmit(data: z.infer<typeof createItemSchema>) {
     try {
-      setIsSubmitting(true);
-      
-      // First upload any images
-      let uploadedImagePaths: string[] = [];
-      if (uploadProps.files.length > 0) {
-        await uploadProps.onUpload();
-        
-        // Get paths of uploaded images
-        uploadedImagePaths = uploadProps.files.map(
-          file => `temp/${tempItemId}/${file.name}`
-        );
-      }
-
-      // Create the item with image references
-      const createdItem = await createItem({
-        ...data,
-        images: uploadedImagePaths
-      });
-      
-      toast.success("Item created successfully!");
-      
-      // Navigate to the item detail page
-      router.push(`/items/${createdItem.id}`);
+      toast.promise(createItem(data), {
+        success: (item) => {
+          if (item?.data?.id) {
+            router.replace(`/items/${item.data.id}`);
+          } else {
+            toast.error("Failed to retrieve item ID");
+          }
+          return "Item created successfully!";
+        }
+      })
     } catch (error) {
       console.error("Error creating item:", error);
       toast.error("Failed to create item");
@@ -149,33 +205,71 @@ export default function CreateItemForm() {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="subcategory"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Subcategory</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select subcategory" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {SUBCATEGORIES.map((subcategory) => (
-                      <SelectItem key={subcategory} value={subcategory}>
-                        {subcategory}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+<FormField
+                control={form.control}
+                name="subcategory"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col gap-1">
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value
+                                ? subcategories.find(
+                                    (sub) => sub.id === field.value
+                                  )?.name
+                                : "Select category"}
+                              <ChevronsUpDown className="opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[200px] p-0">
+                          <Command>
+                            <CommandInput
+                              placeholder="Search category..."
+                              className="h-9"
+                            />
+                            <CommandList>
+                              <CommandEmpty>No category found.</CommandEmpty>
+                              <CommandGroup>
+                                {subcategories.map((sub) => (
+                                  <CommandItem
+                                    value={sub.name}
+                                    key={sub.id}
+                                    onSelect={() => {
+                                      form.setValue("subcategory", sub.id);
+                                    }}
+                                  >
+                                    {sub.name}
+                                    <Check
+                                      className={cn(
+                                        "ml-auto",
+                                        sub.id === field.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
           <FormField
             control={form.control}
@@ -251,18 +345,145 @@ export default function CreateItemForm() {
               </FormItem>
             )}
           />
-          
-          {/* Image upload section */}
-          <div className="space-y-2">
-            <FormLabel>Images</FormLabel>
-            <Dropzone className="w-full" {...uploadProps}>
-              <DropzoneEmptyState />
-              <DropzoneContent uploadButton={false} />
-            </Dropzone>
-            <FormDescription>
-              Upload up to 5 images (10MB max per image)
-            </FormDescription>
-          </div>
+
+          <FormField
+            control={form.control}
+            name="images"
+            render={({ field: { onChange, value, ref, ...fieldProps } }) => (
+              <FormItem>
+                <FormLabel className="sr-only">Upload Files</FormLabel>
+                <FormControl>
+                  <div
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    data-dragging={isDragging || undefined}
+                    data-files={files.length > 0 || undefined}
+                    className="border-input data-[dragging=true]:bg-accent/50 has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 relative flex min-h-52 flex-col items-center overflow-hidden rounded-xl border border-dashed p-4 transition-colors not-data-[files]:justify-center has-[input:focus]:ring-[3px]"
+                  >
+                    <Input
+                      type="file"
+                      accept={acceptedTypes}
+                      multiple
+                      onChange={(e) => {
+                        const selectedFiles = e.target.files;
+                        if (selectedFiles && selectedFiles.length > 0) {
+                          const newFiles = Array.from(selectedFiles).map(
+                            (file) => ({
+                              name: file.name,
+                              size: file.size,
+                              type: file.type,
+                              url: URL.createObjectURL(file),
+                              id: crypto.randomUUID(),
+                            })
+                          );
+                          setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+                          form.setValue(
+                            "images",
+                            Array.from(e.target.files || [])
+                          );
+                        }
+                        // Reset the input value to allow selecting the same file again
+                        e.target.value = "";
+                      }}
+                      className="sr-only"
+                      aria-label="Upload image file"
+                      ref={inputRef}
+                      {...fieldProps}
+                    />
+                    <div className="flex flex-col items-center justify-center px-4 py-3 text-center">
+                      <div
+                        className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
+                        aria-hidden="true"
+                      >
+                        <ImageIcon className="size-4 opacity-60" />
+                      </div>
+                      <p className="mb-1.5 text-sm font-medium">
+                        Drop your images here
+                      </p>
+                      <FormDescription className="text-xs">
+                        SVG, PNG, JPG or GIF (max. {maxSizeMB}MB)
+                      </FormDescription>
+                      <Button
+                        variant="outline"
+                        className="mt-4"
+                        // Open file exporer on computer
+                        onClick={(e) => {
+                          e.preventDefault();
+                          inputRef.current?.click();
+                        }}
+                        type="button"
+                        disabled={isPending}
+                      >
+                        <UploadIcon
+                          className="-ms-1 opacity-60"
+                          aria-hidden="true"
+                        />
+                        {isPending ? "Uploading..." : "Select images"}
+                      </Button>
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* File list */}
+          {files.length > 0 && (
+            <div className="space-y-2 mt-2">
+              {files.map((file) => (
+                <div
+                  key={file.id}
+                  className="bg-background flex items-center justify-between gap-2 rounded-lg border p-2 pe-3"
+                >
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="bg-accent aspect-square shrink-0 rounded">
+                      <img
+                        src={file.url || "/placeholder.svg"}
+                        alt={file.name}
+                        className="size-10 rounded-[inherit] object-cover"
+                      />
+                    </div>
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                      <p className="truncate text-[13px] font-medium">
+                        {file.name}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {formatBytes(file.size)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-muted-foreground/80 hover:text-foreground -me-2 size-8 hover:bg-transparent"
+                    onClick={() => removeFile(file.id)}
+                    aria-label="Remove file"
+                    type="button"
+                  >
+                    <XIcon aria-hidden="true" />
+                  </Button>
+                </div>
+              ))}
+
+              {/* Remove all files button */}
+              {files.length > 1 && (
+                <div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={clearFiles}
+                    type="button"
+                  >
+                    Remove all files
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex justify-end space-x-4">
             <Button
@@ -273,7 +494,11 @@ export default function CreateItemForm() {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="animate-spin" /> : "Create Item"}
+              {isSubmitting ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                "Create Item"
+              )}
             </Button>
           </div>
         </form>

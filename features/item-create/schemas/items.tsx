@@ -25,7 +25,19 @@ export const createItemSchema = z.object({
   condition: z.string().optional(),
   quantity: z.number().int().positive(),
   estimatedValue: z.number().nonnegative().optional(),
-  is_public: z.boolean()
+  is_public: z.boolean(),
+  images: z.array(z
+    .instanceof(File)
+    .refine((file) => file?.size <= 5000000, `Max image size is 5MB.`)
+    .refine(
+      (file) => [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/jpg"
+      ].includes(file?.type),
+      "Only .jpg, .jpeg, .png and .webp formats are supported."
+    ))
 });
 
 // Schema for item (database model)
